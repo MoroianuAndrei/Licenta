@@ -52,3 +52,15 @@ compile_commands.json
 *creator.user*
 
 *_qmlcache.qrc
+
+# Visual Studio specific
+.vs/
+*.ipch
+*.vc.db
+*.opendb
+*.suo
+*.user
+Debug/
+Release/
+x64/
+x86/
