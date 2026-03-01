@@ -1,28 +1,32 @@
 ﻿#pragma once
 #include <vector>
-#include "../core/graph.h"
+#include "graph.h"
 
-// O structură curată pentru a returna rezultatele algoritmului
 struct AMCMCPEP_Result
 {
-    bool isFeasible;       // true dacă există o cale, false dacă nu se poate atinge z
-    double totalCost;      // Costul total de expansiune: M(t) + S(t)
-    std::vector<int> path; // Calea găsită P*
+    bool isFeasible; // true daca problema e fezabila
+    double totalCost;  // M(t) + S(t) - costul total de expansiune
+    std::vector<int> path;   // Drumul P* gasit
 };
 
 class AMCMCPEP
 {
 private:
-    // Structurile de date interne ale algoritmului (Liniile 12-21) 
-    std::vector<double> M; // Costul de tip maxim
-    std::vector<double> S; // Costul de tip sumă
-    std::vector<int> R;    // Eticheta binară (0 = nevizitat, 1 = vizitat)
-    std::vector<int> p;    // Vectorul de predecesori
+    std::vector<double> M; // Costul de tip max  pe drumul pana la nodul i
+    std::vector<double> S; // Costul de tip suma pe drumul pana la nodul i
+    std::vector<int> R; // R(i) = 1 daca nodul i a fost "checked"
+    std::vector<int> p; // Predecesorul nodului i pe drumul optim
 
-    // Subrutina internă: Algoritmul 2 (APF - Algorithm Path Find) [cite: 168, 178]
+    // Algorithm 2 (APF) - reconstruieste drumul din vectorul p
     std::vector<int> getPath(int sourceNode, int targetNode);
 
+    // Pasul 3: BFS - verifica daca t e accesibil din s in G^E
+    bool isTargetReachable(const Graph& G) const;
+
+    // Pasul 7: Dijkstra bottleneck - MCP in G original (fara arce noi)
+    double findMCPCapacityInOriginalGraph(const Graph& G) const;
+
 public:
-    // Funcția principală care rulează Algoritmul 1 pe un graf G pentru o capacitate dorită z
+    // Algorithm 1 complet (pasii 1-49 din paper, inclusiv 3-11)
     AMCMCPEP_Result solve(const Graph& G, double z);
 };
