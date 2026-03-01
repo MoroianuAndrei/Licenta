@@ -1,6 +1,6 @@
 #pragma once
 
-class Node 
+class Node
 {
 private:
     int id;

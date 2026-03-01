@@ -1,14 +1,16 @@
 #include "node.h"
 
-// Implementarea constructorului
-Node::Node(int id) : id(id) {
-    // Aici vom putea initializa ulterior elemente specifice Qt
+Node::Node(int id) : id(id) 
+{
+
 }
 
-int Node::getId() const {
+int Node::getId() const 
+{
     return id;
 }
 
-void Node::setId(int newId) {
+void Node::setId(int newId) 
+{
     id = newId;
 }
