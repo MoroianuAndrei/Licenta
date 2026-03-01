@@ -20,6 +20,12 @@ qt_add_executable(Licenta
     backend/core/graph.cpp
     backend/algorithms/AMCMCPEP.h
     backend/algorithms/AMCMCPEP.cpp
+    backend/algorithms/AMCPEBCP.h
+    backend/algorithms/AMCPEBCP.cpp
+    backend/algorithms/LinearFunc.h
+    backend/algorithms/LinearFunc.cpp
+    backend/algorithms/ParametricSearch.h
+    backend/algorithms/ParametricSearch.cpp
 )
 
 target_link_libraries(Licenta

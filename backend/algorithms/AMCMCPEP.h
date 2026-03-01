@@ -3,13 +3,15 @@
 #include "../core/graph.h"
 
 // O structură curată pentru a returna rezultatele algoritmului
-struct AMCMCPEP_Result {
+struct AMCMCPEP_Result
+{
     bool isFeasible;       // true dacă există o cale, false dacă nu se poate atinge z
     double totalCost;      // Costul total de expansiune: M(t) + S(t)
     std::vector<int> path; // Calea găsită P*
 };
 
-class AMCMCPEP {
+class AMCMCPEP
+{
 private:
     // Structurile de date interne ale algoritmului (Liniile 12-21) 
     std::vector<double> M; // Costul de tip maxim
