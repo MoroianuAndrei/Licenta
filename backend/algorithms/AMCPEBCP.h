@@ -10,8 +10,6 @@ struct AMCPEBCP_Result {
 };
 
 class AMCPEBCP {
-private:
-    double findMCP(const Graph& G, bool useMaxCapacities);
 public:
     // Algorithm 3 - binary search pe [zmin, zmax]
     AMCPEBCP_Result solve(const Graph& G, double W, double epsilon = 1e-4);

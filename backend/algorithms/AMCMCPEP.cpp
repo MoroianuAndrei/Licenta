@@ -17,19 +17,19 @@ bool AMCMCPEP::isTargetReachable(const Graph& G) const
 
     while (!q.empty())
     {
-        int u = q.front(); 
+        int u = q.front();
         q.pop();
 
-        if (u == G.getTarget()) 
+        if (u == G.getTarget())
             return true;
 
         for (const Edge& e : G.getEdgesFrom(u))
         {
             int v = e.getTo();
-            if (!visited[v]) 
-            { 
-                visited[v] = true; 
-                q.push(v); 
+            if (!visited[v])
+            {
+                visited[v] = true;
+                q.push(v);
             }
         }
     }
@@ -37,46 +37,6 @@ bool AMCMCPEP::isTargetReachable(const Graph& G) const
     return false;
 }
 
-// ============================================================================
-// Pasul 7 - Dijkstra bottleneck: MCP in G original (fara arce noi)
-// ============================================================================
-double AMCMCPEP::findMCPCapacityInOriginalGraph(const Graph& G) const
-{
-    int n = G.getNodesCount();
-    std::vector<double> cap(n + 1, -1.0);
-    std::vector<bool> visited(n + 1, false);
-
-    cap[G.getSource()] = std::numeric_limits<double>::infinity();
-
-    for (int iter = 0; iter < n; ++iter)
-    {
-        int u = -1; 
-        double maxC = -1.0;
-        for (int j = 1; j <= n; ++j)
-            if (!visited[j] && cap[j] > maxC) 
-            { 
-                maxC = cap[j]; 
-                u = j; 
-            }
-
-        if (u == -1 || u == G.getTarget()) break;
-        visited[u] = true;
-
-        for (const Edge& e : G.getEdgesFrom(u))
-        {
-            if (e.isNew()) continue; // ignoram arcele noi
-            int v = e.getTo();
-            if (!visited[v])
-            {
-                double pc = std::min(cap[u], e.getCapacity());
-                if (pc > cap[v]) 
-                    cap[v] = pc;
-            }
-        }
-    }
-
-    return cap[G.getTarget()];
-}
 
 // ============================================================================
 // Algorithm 2 (APF) - reconstruieste drumul din vectorul de predecesori
@@ -86,13 +46,13 @@ std::vector<int> AMCMCPEP::getPath(int sourceNode, int targetNode)
     std::vector<int> path;
     int j = targetNode;
 
-    while (j != sourceNode && j != -1) 
-    { 
-        path.push_back(j); 
-        j = p[j]; 
+    while (j != sourceNode && j != -1)
+    {
+        path.push_back(j);
+        j = p[j];
     }
 
-    if (j == sourceNode) 
+    if (j == sourceNode)
         path.push_back(sourceNode);
 
     std::reverse(path.begin(), path.end());
@@ -112,7 +72,7 @@ AMCMCPEP_Result AMCMCPEP::solve(const Graph& G, double z)
         return { false, 0.0, {} };
 
     // --- Pasii 7-11: verifica daca G nu are deja nevoie de expansiune ---
-    double mcpCap = findMCPCapacityInOriginalGraph(G);
+    double mcpCap = G.findMCP(false); // Pasul 7: MCP in G original (fara arce noi)
     if (mcpCap >= z)
         return { true, 0.0, {} }; // Costul e 0, nu e nevoie de expansiune
 
@@ -134,11 +94,11 @@ AMCMCPEP_Result AMCMCPEP::solve(const Graph& G, double z)
         for (int i = 1; i <= n; ++i)
             if (R[i] == 0 && (M[i] + S[i]) < minVal)
             {
-                minVal = M[i] + S[i]; 
+                minVal = M[i] + S[i];
                 u = i;
             }
 
-        if (u == -1) 
+        if (u == -1)
             return { false, 0.0, {} }; // niciun nod accesibil
 
         R[u] = 1; // Pasul 24

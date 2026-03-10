@@ -23,9 +23,6 @@ private:
     // Pasul 3: BFS - verifica daca t e accesibil din s in G^E
     bool isTargetReachable(const Graph& G) const;
 
-    // Pasul 7: Dijkstra bottleneck - MCP in G original (fara arce noi)
-    double findMCPCapacityInOriginalGraph(const Graph& G) const;
-
 public:
     // Algorithm 1 complet (pasii 1-49 din paper, inclusiv 3-11)
     AMCMCPEP_Result solve(const Graph& G, double z);

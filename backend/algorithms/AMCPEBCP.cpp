@@ -3,50 +3,12 @@
 #include <limits>
 #include <cmath>
 
-double AMCPEBCP::findMCP(const Graph& G, bool useMaxCapacities)
-{
-    int n = G.getNodesCount();
-    std::vector<double> cap(n + 1, -1.0);
-    std::vector<bool>   visited(n + 1, false);
-
-    cap[G.getSource()] = std::numeric_limits<double>::infinity();
-
-    for (int iter = 0; iter < n; ++iter)
-    {
-        int u = -1; 
-        double maxC = -1.0;
-        for (int j = 1; j <= n; ++j)
-            if (!visited[j] && cap[j] > maxC) 
-            { 
-                maxC = cap[j]; 
-                u = j; 
-            }
-
-        if (u == -1 || u == G.getTarget()) break;
-        visited[u] = true;
-
-        for (const Edge& e : G.getEdgesFrom(u))
-        {
-            if (!useMaxCapacities && e.isNew()) continue;
-            int    v = e.getTo();
-            double edgeCap = useMaxCapacities ? e.getMaxCapacity() : e.getCapacity();
-
-            if (!visited[v])
-            {
-                double pc = std::min(cap[u], edgeCap);
-                if (pc > cap[v]) cap[v] = pc;
-            }
-        }
-    }
-    return cap[G.getTarget()];
-}
-
 AMCPEBCP_Result AMCPEBCP::solve(const Graph& G, double W, double epsilon)
 {
-    // Pasul 2: zmin = MCP in G
-    double zmin = findMCP(G, false);
-    // Pasul 4: zmax = MCP in G_hat
-    double zmax = findMCP(G, true);
+    // Pasul 2: zmin = MCP in G original (fara arce noi)
+    double zmin = G.findMCP(false);
+    // Pasul 4: zmax = MCP in G_hat (cu capacitatile maxime)
+    double zmax = G.findMCP(true);
 
     if (zmin < 0 || zmax < 0) return { 0.0, 0.0, {} };
     if (std::abs(zmin - zmax) < epsilon) return { zmin, 0.0, {} };
@@ -64,17 +26,17 @@ AMCPEBCP_Result AMCPEBCP::solve(const Graph& G, double W, double epsilon)
     std::vector<int> bestPath;
 
     AMCMCPEP_Result resMin = solver.solve(G, zmin);
-    if (resMin.isFeasible) 
-    { 
-        bestCost = resMin.totalCost; 
-        bestPath = resMin.path; 
+    if (resMin.isFeasible)
+    {
+        bestCost = resMin.totalCost;
+        bestPath = resMin.path;
     }
 
     // Pasii 9-18: binary search
     while (zmax - zmin > epsilon)
     {
         double z = std::ceil((zmin + zmax) / 2.0);
-        if (z <= zmin || z >= zmax) 
+        if (z <= zmin || z >= zmax)
             z = (zmin + zmax) / 2.0;
 
         AMCMCPEP_Result res = solver.solve(G, z);
@@ -83,7 +45,7 @@ AMCPEBCP_Result AMCPEBCP::solve(const Graph& G, double W, double epsilon)
         {
             zmin = z;
             bestZ = z;
-            bestCost = res.totalCost; 
+            bestCost = res.totalCost;
             bestPath = res.path;
         }
         else

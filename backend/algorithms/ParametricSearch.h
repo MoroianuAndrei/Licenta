@@ -14,8 +14,6 @@ class ParametricSearch {
 private:
     AMCMCPEP oracle;
 
-    double findZmin(const Graph& G);
-    double findZmax(const Graph& G);
     std::vector<double> buildSortedCriticalValues(const Graph& G, double zmax);
 
 public:

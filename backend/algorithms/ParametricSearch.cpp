@@ -1,61 +1,8 @@
-#include "ParametricSearch.h"
+ï»¿#include "ParametricSearch.h"
 #include <algorithm>
 #include <set>
 #include <cmath>
 #include <limits>
-
-// ============================================================================
-// Helper: findZmin - MCP in G original
-// ============================================================================
-double ParametricSearch::findZmin(const Graph& G)
-{
-    int n = G.getNodesCount();
-    std::vector<double> cap(n + 1, -1.0);
-    std::vector<bool>   vis(n + 1, false);
-    cap[G.getSource()] = std::numeric_limits<double>::infinity();
-
-    for (int iter = 0; iter < n; ++iter)
-    {
-        int u = -1; double mx = -1.0;
-        for (int j = 1; j <= n; ++j)
-            if (!vis[j] && cap[j] > mx) { mx = cap[j]; u = j; }
-        if (u == -1 || u == G.getTarget()) break;
-        vis[u] = true;
-        for (const Edge& e : G.getEdgesFrom(u))
-        {
-            if (e.isNew()) continue;
-            int v = e.getTo();
-            if (!vis[v]) { double pc = std::min(cap[u], e.getCapacity()); if (pc > cap[v]) cap[v] = pc; }
-        }
-    }
-    return cap[G.getTarget()];
-}
-
-// ============================================================================
-// Helper: findZmax - MCP in G_hat
-// ============================================================================
-double ParametricSearch::findZmax(const Graph& G)
-{
-    int n = G.getNodesCount();
-    std::vector<double> cap(n + 1, -1.0);
-    std::vector<bool>   vis(n + 1, false);
-    cap[G.getSource()] = std::numeric_limits<double>::infinity();
-
-    for (int iter = 0; iter < n; ++iter)
-    {
-        int u = -1; double mx = -1.0;
-        for (int j = 1; j <= n; ++j)
-            if (!vis[j] && cap[j] > mx) { mx = cap[j]; u = j; }
-        if (u == -1 || u == G.getTarget()) break;
-        vis[u] = true;
-        for (const Edge& e : G.getEdgesFrom(u))
-        {
-            int v = e.getTo();
-            if (!vis[v]) { double pc = std::min(cap[u], e.getMaxCapacity()); if (pc > cap[v]) cap[v] = pc; }
-        }
-    }
-    return cap[G.getTarget()];
-}
 
 // ============================================================================
 // Helper: lista sortata de valori critice z1 < z2 < ... < zl
@@ -80,8 +27,8 @@ ParametricResult ParametricSearch::solve(const Graph& G, double W)
 {
     int n = G.getNodesCount();
 
-    double zmin = findZmin(G);
-    double zmax = findZmax(G);
+    double zmin = G.findMCP(false); // MCP in G original (fara arce noi)
+    double zmax = G.findMCP(true);  // MCP in G_hat (cu capacitatile maxime)
 
     if (zmin < 0 || zmax < 0) return { 0.0, 0.0, {} };
     if (zmin >= zmax)          return { zmin, 0.0, {} };
@@ -106,9 +53,9 @@ ParametricResult ParametricSearch::solve(const Graph& G, double W)
         AMCMCPEP_Result res = oracle.solve(G, Z[k]);
 
         // Pasii 11-15: if satisfies budget constraint
-        if (res.isFeasible && res.totalCost <= W) 
+        if (res.isFeasible && res.totalCost <= W)
             L = k;
-        else                                
+        else
             U = k;
     }
 
@@ -146,7 +93,7 @@ ParametricResult ParametricSearch::solve(const Graph& G, double W)
         {
             if (permanent[i] || S[i].isInfinity()) continue;
 
-            if (u == -1) 
+            if (u == -1)
             {
                 u = i;
                 continue;
@@ -158,7 +105,7 @@ ParametricResult ParametricSearch::solve(const Graph& G, double W)
             if (std::abs(diff.r) < 1e-9)
             {
                 // Linii paralele - comparam direct in L_val
-                if (S[i].eval(L_val) < S[u].eval(L_val)) 
+                if (S[i].eval(L_val) < S[u].eval(L_val))
                     u = i;
             }
             else
@@ -169,7 +116,7 @@ ParametricResult ParametricSearch::solve(const Graph& G, double W)
                 if (z_int <= L_val || z_int >= R_val)
                 {
                     // Intersectia e in afara intervalului - comparam in L_val
-                    if (S[i].eval(L_val) < S[u].eval(L_val)) 
+                    if (S[i].eval(L_val) < S[u].eval(L_val))
                         u = i;
                 }
                 else
@@ -182,14 +129,14 @@ ParametricResult ParametricSearch::solve(const Graph& G, double W)
                     {
                         // z* este la dreapta intersectiei => L_val = z_int
                         L_val = z_int;
-                        if (S[i].eval(L_val + 1e-9) < S[u].eval(L_val + 1e-9)) 
+                        if (S[i].eval(L_val + 1e-9) < S[u].eval(L_val + 1e-9))
                             u = i;
                     }
                     else
                     {
                         // z* este la stanga intersectiei => R_val = z_int
                         R_val = z_int;
-                        if (S[i].eval(R_val - 1e-9) < S[u].eval(R_val - 1e-9)) 
+                        if (S[i].eval(R_val - 1e-9) < S[u].eval(R_val - 1e-9))
                             u = i;
                     }
                 }
@@ -199,7 +146,7 @@ ParametricResult ParametricSearch::solve(const Graph& G, double W)
         // Daca nu mai exista niciun nod accesibil, iesim din bucla
         if (u == -1) break;
 
-        // Pasul 29: R(u) = 1 — marcam nodul u ca permanent
+        // Pasul 29: R(u) = 1 ï¿½ marcam nodul u ca permanent
         permanent[u] = true;
 
         // ----------------------------------------------------------------
@@ -213,7 +160,7 @@ ParametricResult ParametricSearch::solve(const Graph& G, double W)
             // Pasul 30: for all w=(u,j) in A^E so that R(j) = 0
             if (permanent[v]) continue;
 
-            // Conditia Ecuatiei (29) — arcul apartine lui A_bar:
+            // Conditia Ecuatiei (29) ï¿½ arcul apartine lui A_bar:
             // c(w) <= zk AND c_hat(w) >= zk+1
             // Doar aceste arce au cost liniar variabil in intervalul [zk, zk+1)
             if (e.getCapacity() > zk + 1e-9) continue;
@@ -254,10 +201,10 @@ ParametricResult ParametricSearch::solve(const Graph& G, double W)
             optimal_z = R_val;
 
         // Incadram in intervalul [L_val, R_val]
-        if (optimal_z < L_val) 
+        if (optimal_z < L_val)
             optimal_z = L_val;
 
-        if (optimal_z > R_val) 
+        if (optimal_z > R_val)
             optimal_z = R_val;
     }
 
