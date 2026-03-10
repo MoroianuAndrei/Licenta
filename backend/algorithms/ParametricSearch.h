@@ -1,22 +1,24 @@
 #pragma once
-#include "../core/graph.h"
+#include "graph.h"
 #include "LinearFunc.h"
-#include "AMCMCPEP.h" // Algoritmul 1 folosit pe post de Oracol
+#include "AMCMCPEP.h"
 #include <vector>
 
 struct ParametricResult {
-    double maxCapacity;    // z* optim (valoarea exacta)
-    double finalCost;      // Costul final (ar trebui sa fie egal cu W)
-    std::vector<int> path; // Drumul optim
+    double           maxCapacity; // z* optim
+    double           finalCost;   // Costul final
+    std::vector<int> path;        // Drumul P*
 };
 
 class ParametricSearch {
 private:
-    AMCMCPEP oracle; // Instanta a Algoritmului 1
+    AMCMCPEP oracle;
 
-    // Returneaza z1 < z2 < ... < zl
-    std::vector<double> getCriticalValues(const Graph& G);
+    double findZmin(const Graph& G);
+    double findZmax(const Graph& G);
+    std::vector<double> buildSortedCriticalValues(const Graph& G, double zmax);
 
 public:
+    // Algorithm 4 - Megiddo parametric search, cazul liniar
     ParametricResult solve(const Graph& G, double W);
 };
