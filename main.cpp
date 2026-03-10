@@ -162,7 +162,7 @@ void test_Algorithm3_Fig5()
     printSeparator("TEST 4: Algorithm 3 (AMCPEBCP) - Fig.5 din paper");
     std::cout << "  Retea: 5 noduri, s=1, t=5, buget W=24\n";
     std::cout << "  Costuri liniare: b(w,z) = r*(z-c)\n";
-    std::cout << "  Asteptat: z* = 13.7778, P* = 1->2->3->5\n";
+    std::cout << "  Asteptat: z* = 13 (intreg), P* = 1->2->3->5\n";
 
     Graph G(5, 1, 5);
 
@@ -184,11 +184,11 @@ void test_Algorithm3_Fig5()
     AMCPEBCP_Result res = solver.solve(G, 24.0);
 
     std::cout << "\n  [Alg3 / Fig.5 / W=24]\n";
-    std::cout << "  z* =          " << std::fixed << std::setprecision(4) << res.maxCapacity << "\n";
-    std::cout << "  Cost:         " << res.finalCost << "\n";
+    std::cout << "  z* =          " << res.maxCapacity << "\n";
+    std::cout << "  Cost:         " << std::fixed << std::setprecision(4) << res.finalCost << "\n";
     std::cout << "  Drum P*:      "; printPath(res.path);
-    std::cout << "  Asteptat:     z* = 13.7778, drum = 1->2->3->5\n";
-    bool ok = std::abs(res.maxCapacity - 13.7778) < 0.01;
+    std::cout << "  Asteptat:     z* = 13, drum = 1->2->3->5\n";
+    bool ok = (res.maxCapacity == 13) && !res.path.empty();
     std::cout << "  Status:       " << (ok ? "CORECT" : "DIFERIT DE ASTEPTAT") << "\n";
 }
 

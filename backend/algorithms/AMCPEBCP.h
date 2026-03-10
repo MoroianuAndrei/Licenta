@@ -4,7 +4,7 @@
 #include <vector>
 
 struct AMCPEBCP_Result {
-    double           maxCapacity; // z* optim
+    int           maxCapacity; // z* optim
     double           finalCost;   // Costul platit (<= W)
     std::vector<int> path;        // Drumul P*
 };
