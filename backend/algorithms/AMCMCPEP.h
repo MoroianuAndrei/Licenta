@@ -21,7 +21,7 @@ private:
     std::vector<int> getPath(int sourceNode, int targetNode);
 
     // Pasul 3: BFS - verifica daca t e accesibil din s in G^E
-    bool isTargetReachable(const Graph& G) const;
+    bool isTargetReachable(const Graph& G, double z) const;
 
 public:
     // Algorithm 1 complet (pasii 1-49 din paper, inclusiv 3-11)
