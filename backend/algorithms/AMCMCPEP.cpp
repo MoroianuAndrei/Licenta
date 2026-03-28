@@ -6,7 +6,7 @@
 // ============================================================================
 // Pasul 3 - BFS: verifica daca t este accesibil din s in G^E
 // ============================================================================
-bool AMCMCPEP::isTargetReachable(const Graph& G) const
+bool AMCMCPEP::isTargetReachable(const Graph& G, double z) const
 {
     int n = G.getNodesCount();
     std::vector<bool> visited(n + 1, false);
@@ -25,6 +25,8 @@ bool AMCMCPEP::isTargetReachable(const Graph& G) const
 
         for (const Edge& e : G.getEdgesFrom(u))
         {
+            if (e.getMaxCapacity() < z) continue;
+
             int v = e.getTo();
             if (!visited[v])
             {
@@ -68,7 +70,7 @@ AMCMCPEP_Result AMCMCPEP::solve(const Graph& G, double z)
     int n = G.getNodesCount();
 
     // --- Pasii 3-6: fezabilitate ---
-    if (!isTargetReachable(G))
+    if (!isTargetReachable(G, z))
         return { false, 0.0, {} };
 
     // --- Pasii 7-11: verifica daca G nu are deja nevoie de expansiune ---
