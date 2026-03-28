@@ -35,36 +35,75 @@ std::vector<Edge> Graph::getAllEdges() const
     return allEdges;
 }
 
-double Graph::findMCP(bool useMaxCapacities) const
+std::pair<double, std::vector<int>> Graph::findMCPWithPath(bool useMaxCapacities) const
 {
     std::vector<double> cap(n + 1, -1.0);
-    std::vector<bool>   vis(n + 1, false);
+    std::vector<bool> vis(n + 1, false);
+    std::vector<int> parent(n + 1, -1);
+
     cap[s] = std::numeric_limits<double>::infinity();
 
     for (int iter = 0; iter < n; ++iter)
     {
-        // Selectam nodul nevizitat cu capacitatea maxima
-        int u = -1; double mx = -1.0;
-        for (int j = 1; j <= n; ++j)
-            if (!vis[j] && cap[j] > mx) { mx = cap[j]; u = j; }
+        int u = -1;
+        double mx = -1.0;
 
-        if (u == -1 || u == t) break;
+        for (int j = 1; j <= n; ++j)
+        {
+            if (!vis[j] && cap[j] > mx)
+            {
+                mx = cap[j];
+                u = j;
+            }
+        }
+
+        if (u == -1 || u == t)
+            break;
+
         vis[u] = true;
 
         for (const Edge& e : adj[u])
         {
-            // useMaxCapacities=false: G original => ignoram arcele noi
-            if (!useMaxCapacities && e.isNew()) continue;
+            // In G original ignoram arcele noi
+            if (!useMaxCapacities && e.isNew())
+                continue;
 
-            int    v = e.getTo();
+            int v = e.getTo();
             double edgeCap = useMaxCapacities ? e.getMaxCapacity() : e.getCapacity();
 
             if (!vis[v])
             {
-                double pc = std::min(cap[u], edgeCap);
-                if (pc > cap[v]) cap[v] = pc;
+                double pathCap = std::min(cap[u], edgeCap);
+                if (pathCap > cap[v])
+                {
+                    cap[v] = pathCap;
+                    parent[v] = u;
+                }
             }
         }
     }
-    return cap[t];
+
+    std::vector<int> path;
+    if (cap[t] < 0)
+        return { cap[t], path };
+
+    int curr = t;
+    while (curr != -1)
+    {
+        path.push_back(curr);
+        if (curr == s)
+            break;
+        curr = parent[curr];
+    }
+
+    if (path.empty() || path.back() != s)
+        return { cap[t], {} };
+
+    std::reverse(path.begin(), path.end());
+    return { cap[t], path };
+}
+
+double Graph::findMCP(bool useMaxCapacities) const
+{
+    return findMCPWithPath(useMaxCapacities).first;
 }

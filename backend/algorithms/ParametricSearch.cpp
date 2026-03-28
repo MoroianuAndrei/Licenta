@@ -30,8 +30,14 @@ ParametricResult ParametricSearch::solve(const Graph& G, double W)
     double zmin = G.findMCP(false); // MCP in G original (fara arce noi)
     double zmax = G.findMCP(true);  // MCP in G_hat (cu capacitatile maxime)
 
-    if (zmin < 0 || zmax < 0) return { 0.0, 0.0, {} };
-    if (zmin >= zmax)          return { zmin, 0.0, {} };
+    if (zmin < 0 || zmax < 0)
+        return { 0.0, 0.0, {} };
+
+    if (zmin >= zmax)
+    {
+        auto mcp = G.findMCPWithPath(false);
+        return { zmin, 0.0, mcp.second };
+    }
 
     // ========================================================================
     // FAZA I - Pasii 4-17 din Algorithm 4

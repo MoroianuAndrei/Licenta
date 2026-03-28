@@ -10,8 +10,14 @@ AMCPEBCP_Result AMCPEBCP::solve(const Graph& G, double W, double epsilon)
     // Pasul 4: zmax = MCP in G_hat (cu capacitatile maxime)
     int zmax = (int)G.findMCP(true);
 
-    if (zmin < 0 || zmax < 0) return { 0, 0.0, {} };
-    if (zmin >= zmax)          return { zmin, 0.0, {} };
+    if (zmin < 0 || zmax < 0)
+        return { 0, 0.0, {} };
+
+    if (zmin >= zmax)
+    {
+        auto mcp = G.findMCPWithPath(false);
+        return { zmin, 0.0, mcp.second };
+    }
 
     AMCMCPEP solver;
 
