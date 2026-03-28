@@ -1,4 +1,5 @@
 ﻿#include "graph.h"
+#include <limits>
 
 Graph::Graph(int nodeCount, int source, int target)
     : n(nodeCount), s(source), t(target)
@@ -32,4 +33,38 @@ std::vector<Edge> Graph::getAllEdges() const
         }
     }
     return allEdges;
+}
+
+double Graph::findMCP(bool useMaxCapacities) const
+{
+    std::vector<double> cap(n + 1, -1.0);
+    std::vector<bool>   vis(n + 1, false);
+    cap[s] = std::numeric_limits<double>::infinity();
+
+    for (int iter = 0; iter < n; ++iter)
+    {
+        // Selectam nodul nevizitat cu capacitatea maxima
+        int u = -1; double mx = -1.0;
+        for (int j = 1; j <= n; ++j)
+            if (!vis[j] && cap[j] > mx) { mx = cap[j]; u = j; }
+
+        if (u == -1 || u == t) break;
+        vis[u] = true;
+
+        for (const Edge& e : adj[u])
+        {
+            // useMaxCapacities=false: G original => ignoram arcele noi
+            if (!useMaxCapacities && e.isNew()) continue;
+
+            int    v = e.getTo();
+            double edgeCap = useMaxCapacities ? e.getMaxCapacity() : e.getCapacity();
+
+            if (!vis[v])
+            {
+                double pc = std::min(cap[u], edgeCap);
+                if (pc > cap[v]) cap[v] = pc;
+            }
+        }
+    }
+    return cap[t];
 }
