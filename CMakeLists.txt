@@ -27,6 +27,12 @@ qt_add_executable(Licenta
     backend/algorithms/ParametricSearch.cpp
     backend/testing/BruteForceValidator.h
     backend/testing/BruteForceValidator.cpp
+    backend/testing/ManualTests.h
+    backend/testing/ManualTests.cpp
+    backend/testing/TestUtils.h
+    backend/testing/TestUtils.cpp
+    backend/testing/ValidationTests.h
+    backend/testing/ValidationTests.cpp
 )
 
 target_include_directories(Licenta
