@@ -29,4 +29,6 @@ public:
     // useMaxCapacities = false => MCP in G original (ignora arcele noi, foloseste c(w))
     // useMaxCapacities = true  => MCP in G_hat      (foloseste c_hat(w) pe toate arcele)
     double findMCP(bool useMaxCapacities) const;
+
+    std::pair<double, std::vector<int>> findMCPWithPath(bool useMaxCapacities) const;
 };

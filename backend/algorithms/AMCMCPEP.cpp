@@ -74,9 +74,11 @@ AMCMCPEP_Result AMCMCPEP::solve(const Graph& G, double z)
         return { false, 0.0, {} };
 
     // --- Pasii 7-11: verifica daca G nu are deja nevoie de expansiune ---
-    double mcpCap = G.findMCP(false); // Pasul 7: MCP in G original (fara arce noi)
+    auto mcpResult = G.findMCPWithPath(false);
+    double mcpCap = mcpResult.first;
+
     if (mcpCap >= z)
-        return { true, 0.0, {} }; // Costul e 0, nu e nevoie de expansiune
+        return { true, 0.0, mcpResult.second };
 
     // --- Pasii 12-21: initializare ---
     M.assign(n + 1, std::numeric_limits<double>::infinity());
