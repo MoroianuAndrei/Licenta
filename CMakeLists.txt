@@ -6,6 +6,7 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 qt_standard_project_setup()
 
 qt_add_executable(Licenta
+WIN32 MACOSX_BUNDLE
     main.cpp
     mainwindow.cpp
     mainwindow.h
@@ -25,6 +26,14 @@ qt_add_executable(Licenta
     backend/algorithms/LinearFunc.cpp
     backend/algorithms/ParametricSearch.h
     backend/algorithms/ParametricSearch.cpp
+    backend/testing/BruteForceValidator.h
+    backend/testing/BruteForceValidator.cpp
+    backend/testing/ManualTests.h
+    backend/testing/ManualTests.cpp
+    backend/testing/TestUtils.h
+    backend/testing/TestUtils.cpp
+    backend/testing/ValidationTests.h
+    backend/testing/ValidationTests.cpp
 )
 
 target_include_directories(Licenta
@@ -32,6 +41,7 @@ target_include_directories(Licenta
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/backend/core
         ${CMAKE_CURRENT_SOURCE_DIR}/backend/algorithms
+        ${CMAKE_CURRENT_SOURCE_DIR}/backend/testing
 )
 
 target_link_libraries(Licenta
