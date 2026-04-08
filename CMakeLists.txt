@@ -6,6 +6,7 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
 qt_standard_project_setup()
 
 qt_add_executable(Licenta
+WIN32 MACOSX_BUNDLE
     main.cpp
     mainwindow.cpp
     mainwindow.h
@@ -40,6 +41,7 @@ target_include_directories(Licenta
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/backend/core
         ${CMAKE_CURRENT_SOURCE_DIR}/backend/algorithms
+        ${CMAKE_CURRENT_SOURCE_DIR}/backend/testing
 )
 
 target_link_libraries(Licenta

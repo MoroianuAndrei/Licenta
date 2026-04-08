@@ -1,15 +1,12 @@
-﻿#include <iostream>
-#include <iomanip>
+﻿#include <QApplication>
+#include "mainwindow.h"
 
-#include "backend/testing/ManualTests.h"
-#include "backend/testing/ValidationTests.h"
-
-int main()
+int main(int argc, char* argv[])
 {
-    std::cout << std::fixed << std::setprecision(4);
+    QApplication a(argc, argv);
 
-    runAllManualTests();
-    runAllValidationTests();
+    MainWindow w;
+    w.show();
 
-    return 0;
+    return a.exec(); // This keeps the UI running
 }

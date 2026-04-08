@@ -1,4 +1,4 @@
-#include "ValidationTests.h"
+﻿#include "ValidationTests.h"
 #include "TestUtils.h"
 #include "BruteForceValidator.h"
 
@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <random>
 
 static void compareAMCMCPEPWithBruteForce(const Graph& G, double z, const std::string& label)
 {
@@ -46,78 +47,116 @@ static void compareAMCMCPEPWithBruteForce(const Graph& G, double z, const std::s
         << "\n";
 }
 
-static void validation_SmallGraph_1()
+static Graph generateRandomSmallGraph(int n, double edgeProb, std::mt19937& rng)
 {
-    Graph G(4, 1, 4);
-    const double z = 10.0;
+    Graph G(n, 1, n);
 
-    auto B = [](double c) {
-        return [c](double x) { return x <= c ? 0.0 : 2.0 * (x - c); };
-        };
+    std::uniform_real_distribution<double> probDist(0.0, 1.0);
+    std::uniform_int_distribution<int> capDist(1, 10);
+    std::uniform_int_distribution<int> extraDist(0, 8);
+    std::uniform_int_distribution<int> alphaDist(1, 4);
+    std::uniform_int_distribution<int> betaDist(1, 3);
 
-    auto U = [](double c) {
-        return [c](double x) { return x <= c ? 0.0 : 1.0 * (x - c) * (x - c); };
-        };
+    for (int i = 1; i <= n; ++i)
+    {
+        for (int j = 1; j <= n; ++j)
+        {
+            if (i == j) continue;
 
-    G.addEdge(Edge(1, 2, 7, 15, false, U(7), B(7)));
-    G.addEdge(Edge(2, 4, 8, 15, false, U(8), B(8)));
-    G.addEdge(Edge(1, 3, 9, 15, false, U(9), B(9)));
-    G.addEdge(Edge(3, 4, 6, 15, false, U(6), B(6)));
-    G.addEdge(Edge(2, 3, 10, 15, false, U(10), B(10)));
+            if (probDist(rng) > edgeProb) continue;
 
-    compareAMCMCPEPWithBruteForce(G, z, "graf mic custom 1");
+            double c = capDist(rng);
+            double c_hat = c + extraDist(rng);
+
+            int alpha = alphaDist(rng);
+            int beta = betaDist(rng);
+
+            auto B = [c, alpha](double z) {
+                return (z <= c) ? 0.0 : alpha * (z - c);
+                };
+
+            auto U = [c, beta](double z) {
+                return (z <= c) ? 0.0 : beta * (z - c) * (z - c);
+                };
+
+            G.addEdge(Edge(i, j, c, c_hat, false, U, B));
+        }
+    }
+
+    return G;
 }
 
-static void validation_NoExpansionNeeded()
+static double chooseRandomZ(const Graph& G, std::mt19937& rng)
 {
-    Graph G(3, 1, 3);
-    const double z = 20.0;
-    const double INF = 1e9;
+    double zmin = G.findMCP(false);
+    double zmax = G.findMCP(true);
 
-    auto B = [](double c) {
-        return [c](double x) { return x <= c ? 0.0 : 5.0 * (x - c); };
-        };
+    if (zmax < 0) return 1.0;
+    if (zmin < 0) zmin = 1.0;
+    if (zmax < zmin) zmax = zmin;
 
-    auto U = [](double c) {
-        return [c](double x) { return x <= c ? 0.0 : 2.0 * (x - c) * (x - c); };
-        };
+    int lo = (int)std::max(1.0, std::floor(zmin));
+    int hi = (int)std::ceil(zmax + 2.0);
 
-    G.addEdge(Edge(1, 2, 30, INF, false, U(30), B(30)));
-    G.addEdge(Edge(2, 3, 25, INF, false, U(25), B(25)));
-
-    compareAMCMCPEPWithBruteForce(G, z, "fara expansiune");
+    std::uniform_int_distribution<int> dist(lo, std::max(lo, hi));
+    return (double)dist(rng);
 }
 
-static void validation_Infeasible()
+static void runRandomBruteForceValidation(int testCount)
 {
-    Graph G(3, 1, 3);
-    const double z = 15.0;
+    printSeparator("VALIDARE RANDOM AMCMCPEP vs BRUTE-FORCE");
 
-    auto B = [](double c) {
-        return [c](double x) { return x <= c ? 0.0 : 5.0 * (x - c); };
-        };
+    std::mt19937 rng(42);
+    int passed = 0;
 
-    auto U = [](double c) {
-        return [c](double x) { return x <= c ? 0.0 : 2.0 * (x - c) * (x - c); };
-        };
+    for (int t = 1; t <= testCount; ++t)
+    {
+        int n = 4 + (t % 3); // 4,5,6 noduri
 
-    G.addEdge(Edge(1, 2, 5, 20, false, U(5), B(5)));
+        Graph G = generateRandomSmallGraph(n, 0.35, rng);
+        double z = chooseRandomZ(G, rng);
 
-    compareAMCMCPEPWithBruteForce(G, z, "infezabil");
+        AMCMCPEP solver;
+        BruteForceValidator brute;
+
+        AMCMCPEP_Result alg = solver.solve(G, z);
+        BruteForceResult bf = brute.solveAMCMCPEP(G, z);
+
+        bool sameFeasible = (alg.isFeasible == bf.feasible);
+        bool sameCost = (!alg.isFeasible && !bf.feasible) ||
+            (std::abs(alg.totalCost - bf.totalCost) < 1e-6);
+
+        if (sameFeasible && sameCost)
+        {
+            passed++;
+        }
+        else
+        {
+            std::cout << "\n❌ Test esuat #" << t << "\n";
+            std::cout << "n=" << n << ", z=" << z << "\n";
+
+            std::cout << "Algoritm: feasible=" << alg.isFeasible
+                << ", cost=" << alg.totalCost << "\n";
+
+            std::cout << "Brute-force: feasible=" << bf.feasible
+                << ", cost=" << bf.totalCost << "\n";
+
+            std::cout << "Drum algoritm: ";
+            printPath(alg.path);
+
+            std::cout << "Drum brute-force: ";
+            printPath(bf.path);
+
+            break;
+        }
+    }
+
+    std::cout << "\nRezultat: " << passed << " / " << testCount << " teste corecte\n";
 }
 
 void runAllValidationTests()
 {
-    std::cout << "\n";
-    std::cout << "************************************************************\n";
-    std::cout << "   VALIDARE CU BRUTE-FORCE                                 \n";
-    std::cout << "************************************************************\n";
+    printSeparator("VALIDARE CU BRUTE-FORCE");
 
-    validation_SmallGraph_1();
-    validation_NoExpansionNeeded();
-    validation_Infeasible();
-
-    std::cout << "\n************************************************************\n";
-    std::cout << "   VALIDAREA CU BRUTE-FORCE S-A INCHEIAT\n";
-    std::cout << "************************************************************\n\n";
+    runRandomBruteForceValidation(50);
 }
