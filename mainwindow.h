@@ -9,6 +9,9 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 
+#include "backend/core/graph.h"
+#include <optional>
+
 namespace Ui {
 class MainWindow;
 }
@@ -36,6 +39,7 @@ private:
     
     // Placeholder for graph - include your graph headers here
     // Graph currentGraph; 
+    std::optional<Graph> currentGraph;
 };
 
 #endif // MAINWINDOW_H

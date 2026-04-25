@@ -34,6 +34,8 @@ WIN32 MACOSX_BUNDLE
     backend/testing/TestUtils.cpp
     backend/testing/ValidationTests.h
     backend/testing/ValidationTests.cpp
+    backend/io/GraphLoader.h
+    backend/io/GraphLoader.cpp
 )
 
 target_include_directories(Licenta
@@ -42,6 +44,7 @@ target_include_directories(Licenta
         ${CMAKE_CURRENT_SOURCE_DIR}/backend/core
         ${CMAKE_CURRENT_SOURCE_DIR}/backend/algorithms
         ${CMAKE_CURRENT_SOURCE_DIR}/backend/testing
+        ${CMAKE_CURRENT_SOURCE_DIR}/backend/io
 )
 
 target_link_libraries(Licenta
