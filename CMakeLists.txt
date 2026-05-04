@@ -12,12 +12,27 @@ WIN32 MACOSX_BUNDLE
     mainwindow.h
     mainwindow.ui
 
+    frontend/UiModels.h
+    frontend/GraphWidget.h
+    frontend/GraphWidget.cpp
+    frontend/SidebarWidget.h
+    frontend/SidebarWidget.cpp
+    frontend/EdgeDetailsWidget.h
+    frontend/EdgeDetailsWidget.cpp
+    frontend/ResultWidget.h
+    frontend/ResultWidget.cpp
+    frontend/ControlPanelWidget.h
+    frontend/ControlPanelWidget.cpp
+    frontend/GenerateGraphWidget.h
+    frontend/GenerateGraphWidget.cpp
+
     backend/core/node.h
     backend/core/node.cpp
     backend/core/edge.h
     backend/core/edge.cpp
     backend/core/graph.h
     backend/core/graph.cpp
+
     backend/algorithms/AMCMCPEP.h
     backend/algorithms/AMCMCPEP.cpp
     backend/algorithms/AMCPEBCP.h
@@ -26,6 +41,7 @@ WIN32 MACOSX_BUNDLE
     backend/algorithms/LinearFunc.cpp
     backend/algorithms/ParametricSearch.h
     backend/algorithms/ParametricSearch.cpp
+
     backend/testing/BruteForceValidator.h
     backend/testing/BruteForceValidator.cpp
     backend/testing/ManualTests.h
@@ -34,17 +50,23 @@ WIN32 MACOSX_BUNDLE
     backend/testing/TestUtils.cpp
     backend/testing/ValidationTests.h
     backend/testing/ValidationTests.cpp
+
     backend/io/GraphLoader.h
     backend/io/GraphLoader.cpp
+
+    backend/generation/RandomGraphGenerator.h
+    backend/generation/RandomGraphGenerator.cpp
 )
 
 target_include_directories(Licenta
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/frontend
         ${CMAKE_CURRENT_SOURCE_DIR}/backend/core
         ${CMAKE_CURRENT_SOURCE_DIR}/backend/algorithms
         ${CMAKE_CURRENT_SOURCE_DIR}/backend/testing
         ${CMAKE_CURRENT_SOURCE_DIR}/backend/io
+        ${CMAKE_CURRENT_SOURCE_DIR}/backend/generation
 )
 
 target_link_libraries(Licenta
@@ -66,4 +88,5 @@ qt_generate_deploy_app_script(
     OUTPUT_SCRIPT deploy_script
     NO_UNSUPPORTED_PLATFORM_ERROR
 )
+
 install(SCRIPT ${deploy_script})

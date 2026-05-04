@@ -2,44 +2,67 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QComboBox>
-#include <QPushButton>
-#include <QDoubleSpinBox>
-#include <QTextEdit>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
+#include <QString>
+#include <QStackedWidget>
+
+#include <optional>
+#include <vector>
 
 #include "backend/core/graph.h"
-#include <optional>
+#include "frontend/UiModels.h"
 
-namespace Ui {
-class MainWindow;
-}
+class ControlPanelWidget;
+class EdgeDetailsWidget;
+class GenerateGraphWidget;
+class GraphWidget;
+class ResultWidget;
+class SidebarWidget;
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    explicit MainWindow(QWidget* parent = nullptr);
+    ~MainWindow() override = default;
 
 private slots:
-    void onRunClicked();
     void onLoadGraphClicked();
+    void onRunClicked();
+    void onAlgorithmChanged(const QString& algorithm);
+    void onParameterChanged(double value);
+    void onEdgeSelected(const VisualEdge& edge);
+    void onGeneratedGraph(const QString& filePath);
 
 private:
-    Ui::MainWindow *ui;
-    
-    QComboBox *algoComboBox;
-    QDoubleSpinBox *zSpinBox;
-    QPushButton *runButton;
-    QPushButton *loadGraphButton;
-    QTextEdit *outputText;
-    
-    // Placeholder for graph - include your graph headers here
-    // Graph currentGraph; 
-    std::optional<Graph> currentGraph;
+    void buildUi();
+    void applyStyle();
+
+    void resetResultState();
+    void refreshViewState();
+    void logSeparator();
+
+    void loadGraphFromFile(const QString& fileName);
+
+    QString defaultDataPath() const;
+    QString formatPath(const std::vector<int>& path) const;
+    std::vector<VisualEdge> loadVisualEdgesFromCSV(const QString& fileName) const;
+
+    SidebarWidget* sidebar_ = nullptr;
+
+    QStackedWidget* stackedWidget_ = nullptr;
+    QWidget* loadRunPage_ = nullptr;
+    GenerateGraphWidget* generateGraphWidget_ = nullptr;
+
+    ControlPanelWidget* controls_ = nullptr;
+    GraphWidget* graphWidget_ = nullptr;
+    EdgeDetailsWidget* edgeDetails_ = nullptr;
+    ResultWidget* resultWidget_ = nullptr;
+
+    std::optional<Graph> currentGraph_;
+    QString lastLoadedGraphFileName_;
+    std::vector<VisualEdge> visualEdges_;
+    AlgorithmViewState viewState_;
 };
 
-#endif // MAINWINDOW_H
+#endif
