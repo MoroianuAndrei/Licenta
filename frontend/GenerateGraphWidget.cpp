@@ -1,13 +1,15 @@
 #include "GenerateGraphWidget.h"
 
-#include <QVBoxLayout>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMessageBox>
+#include <QPushButton>
 #include <QSpinBox>
 #include <QDoubleSpinBox>
-#include <QPushButton>
-#include <QFileDialog>
-#include <QMessageBox>
+#include <QVBoxLayout>
 
 #include "backend/generation/RandomGraphGenerator.h"
 
@@ -30,32 +32,32 @@ GenerateGraphWidget::GenerateGraphWidget(QWidget* parent)
     );
     subtitle->setStyleSheet("color: #94a3b8; font-size: 14px;");
 
-    nodesSpinBox = new QSpinBox();
+    nodesSpinBox = new QSpinBox(this);
     nodesSpinBox->setRange(2, 10000);
     nodesSpinBox->setValue(100);
 
-    pathsSpinBox = new QSpinBox();
+    pathsSpinBox = new QSpinBox(this);
     pathsSpinBox->setRange(1, 10000);
     pathsSpinBox->setValue(20);
 
-    cyclesSpinBox = new QSpinBox();
+    cyclesSpinBox = new QSpinBox(this);
     cyclesSpinBox->setRange(0, 10000);
     cyclesSpinBox->setValue(10);
 
-    probabilitySpinBox = new QDoubleSpinBox();
+    probabilitySpinBox = new QDoubleSpinBox(this);
     probabilitySpinBox->setRange(0.0, 1.0);
     probabilitySpinBox->setDecimals(3);
     probabilitySpinBox->setSingleStep(0.01);
     probabilitySpinBox->setValue(0.05);
 
-    seedSpinBox = new QSpinBox();
+    seedSpinBox = new QSpinBox(this);
     seedSpinBox->setRange(0, 999999999);
     seedSpinBox->setValue(123);
 
-    generateButton = new QPushButton("Generate CSV");
-    statusLabel = new QLabel("No file generated yet.");
+    generateButton = new QPushButton("Generate CSV", this);
+    statusLabel = new QLabel("No file generated yet.", this);
 
-    QString inputStyle =
+    const QString inputStyle =
         "QSpinBox, QDoubleSpinBox {"
         "background-color: #111827;"
         "color: white;"
@@ -90,13 +92,13 @@ GenerateGraphWidget::GenerateGraphWidget(QWidget* parent)
 
     auto addRow = [&](const QString& labelText, QWidget* input) {
         auto* row = new QHBoxLayout();
-        auto* label = new QLabel(labelText);
+        auto* label = new QLabel(labelText, this);
         label->setFixedWidth(180);
         label->setStyleSheet("color: white; font-size: 14px;");
         row->addWidget(label);
         row->addWidget(input);
         layout->addLayout(row);
-        };
+    };
 
     layout->addWidget(title);
     layout->addWidget(subtitle);
@@ -116,20 +118,45 @@ GenerateGraphWidget::GenerateGraphWidget(QWidget* parent)
     setStyleSheet("background-color: #0f172a;");
 
     connect(generateButton, &QPushButton::clicked,
-        this, &GenerateGraphWidget::onGenerateClicked);
+            this, &GenerateGraphWidget::onGenerateClicked);
+}
+
+QString GenerateGraphWidget::defaultDataPath() const
+{
+    QDir dir(QCoreApplication::applicationDirPath());
+
+    for (int i = 0; i < 5; ++i) {
+        if (dir.exists("data")) {
+            dir.cd("data");
+            return dir.absolutePath();
+        }
+
+        if (!dir.cdUp()) {
+            break;
+        }
+    }
+
+    return QDir::homePath();
 }
 
 void GenerateGraphWidget::onGenerateClicked()
 {
+    const QString suggestedFileName = QString("random_graph_%1.csv").arg(nodesSpinBox->value());
+    const QString suggestedPath = QDir(defaultDataPath()).filePath(suggestedFileName);
+
     QString filePath = QFileDialog::getSaveFileName(
         this,
         "Save generated graph",
-        "random_graph.csv",
-        "CSV Files (*.csv)"
+        suggestedPath,
+        "CSV Files (*.csv);;All Files (*.*)"
     );
 
     if (filePath.isEmpty()) {
         return;
+    }
+
+    if (!filePath.endsWith(".csv", Qt::CaseInsensitive)) {
+        filePath += ".csv";
     }
 
     try {

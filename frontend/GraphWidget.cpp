@@ -14,6 +14,9 @@
 #include <QPainterPathStroker>
 #include <QPen>
 #include <QVBoxLayout>
+#include <QWheelEvent>
+#include <QMouseEvent>
+#include <QScrollBar>
 
 #include <algorithm>
 #include <cmath>
@@ -43,6 +46,78 @@ namespace
     {
         return a.from == b.from && a.to == b.to;
     }
+
+
+    class ZoomableGraphicsView final : public QGraphicsView
+    {
+    public:
+        explicit ZoomableGraphicsView(QGraphicsScene* scene, QWidget* parent = nullptr)
+            : QGraphicsView(scene, parent)
+        {
+            setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+            setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+            setDragMode(QGraphicsView::NoDrag);
+            setMouseTracking(true);
+        }
+
+    protected:
+        void wheelEvent(QWheelEvent* event) override
+        {
+            if (event->modifiers() & Qt::ControlModifier) {
+                const double zoomFactor = event->angleDelta().y() > 0 ? 1.15 : 1.0 / 1.15;
+                scale(zoomFactor, zoomFactor);
+                event->accept();
+                return;
+            }
+
+            QGraphicsView::wheelEvent(event);
+        }
+
+        void mousePressEvent(QMouseEvent* event) override
+        {
+            if (event->button() == Qt::MiddleButton) {
+                isPanning_ = true;
+                lastPanPoint_ = event->pos();
+                setCursor(Qt::ClosedHandCursor);
+                event->accept();
+                return;
+            }
+
+            QGraphicsView::mousePressEvent(event);
+        }
+
+        void mouseMoveEvent(QMouseEvent* event) override
+        {
+            if (isPanning_) {
+                const QPoint delta = event->pos() - lastPanPoint_;
+                lastPanPoint_ = event->pos();
+
+                horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
+                verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
+
+                event->accept();
+                return;
+            }
+
+            QGraphicsView::mouseMoveEvent(event);
+        }
+
+        void mouseReleaseEvent(QMouseEvent* event) override
+        {
+            if (event->button() == Qt::MiddleButton && isPanning_) {
+                isPanning_ = false;
+                setCursor(Qt::ArrowCursor);
+                event->accept();
+                return;
+            }
+
+            QGraphicsView::mouseReleaseEvent(event);
+        }
+
+    private:
+        bool isPanning_ = false;
+        QPoint lastPanPoint_;
+    };
 
     class EdgeItem final : public QGraphicsPathItem
     {
@@ -76,7 +151,7 @@ GraphWidget::GraphWidget(QWidget* parent)
     setObjectName("Panel");
 
     scene_ = new QGraphicsScene(this);
-    view_ = new QGraphicsView(scene_, this);
+    view_ = new ZoomableGraphicsView(scene_, this);
     view_->setRenderHint(QPainter::Antialiasing);
     view_->setBackgroundBrush(QBrush(QColor(8, 13, 30)));
     view_->setFrameShape(QFrame::NoFrame);
@@ -91,6 +166,7 @@ GraphWidget::GraphWidget(QWidget* parent)
 void GraphWidget::setEdges(const std::vector<VisualEdge>& edges)
 {
     edges_ = edges;
+    autoFitPending_ = true;
     clearSelection();
     redraw();
 }
@@ -120,11 +196,6 @@ QString GraphWidget::formatNumber(double value) const
     return QString::number(value, 'f', 2);
 }
 
-QString GraphWidget::shortEdgeLabel(const VisualEdge& edge) const
-{
-    return QString("%1 / %2")
-        .arg(formatNumber(edge.capacity), formatNumber(edge.maxCapacity));
-}
 
 void GraphWidget::redraw()
 {
@@ -136,7 +207,11 @@ void GraphWidget::redraw()
         text->setFont(QFont("Segoe UI", 12, QFont::Bold));
         text->setPos(40, 40);
         scene_->setSceneRect(0, 0, 720, 440);
-        view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
+        if (autoFitPending_) {
+            view_->resetTransform();
+            view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
+            autoFitPending_ = false;
+        }
         return;
     }
 
@@ -218,15 +293,6 @@ void GraphWidget::redraw()
         clickable->setBrush(Qt::NoBrush);
         scene_->addItem(clickable);
 
-        QPointF mid = (start + end) / 2.0;
-        QPointF normal(-dir.y(), dir.x());
-        QPointF labelPos = mid + normal * 22.0;
-
-        auto* label = scene_->addText(shortEdgeLabel(edge));
-        label->setDefaultTextColor(color.lighter(selected ? 145 : 115));
-        label->setFont(QFont("Segoe UI", 8, QFont::Bold));
-        label->setPos(labelPos);
-        label->setZValue(6);
     }
 
     for (int node : nodes) {
@@ -243,6 +309,10 @@ void GraphWidget::redraw()
         text->setZValue(11);
     }
 
-    scene_->setSceneRect(scene_->itemsBoundingRect().adjusted(-50, -50, 50, 50));
-    view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
+    scene_->setSceneRect(scene_->itemsBoundingRect().adjusted(-80, -80, 80, 80));
+    if (autoFitPending_) {
+        view_->resetTransform();
+        view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
+        autoFitPending_ = false;
+    }
 }

@@ -27,11 +27,11 @@ signals:
 private:
     void redraw();
     QString formatNumber(double value) const;
-    QString shortEdgeLabel(const VisualEdge& edge) const;
 
     QGraphicsScene* scene_ = nullptr;
     QGraphicsView* view_ = nullptr;
     std::vector<VisualEdge> edges_;
     AlgorithmViewState state_;
     std::optional<VisualEdge> selectedEdge_;
+    bool autoFitPending_ = true;
 };

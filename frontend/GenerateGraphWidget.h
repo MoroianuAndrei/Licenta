@@ -21,11 +21,13 @@ private slots:
     void onGenerateClicked();
 
 private:
-    QSpinBox* nodesSpinBox;
-    QSpinBox* pathsSpinBox;
-    QSpinBox* cyclesSpinBox;
-    QDoubleSpinBox* probabilitySpinBox;
-    QSpinBox* seedSpinBox;
-    QPushButton* generateButton;
-    QLabel* statusLabel;
+    QString defaultDataPath() const;
+
+    QSpinBox* nodesSpinBox = nullptr;
+    QSpinBox* pathsSpinBox = nullptr;
+    QSpinBox* cyclesSpinBox = nullptr;
+    QDoubleSpinBox* probabilitySpinBox = nullptr;
+    QSpinBox* seedSpinBox = nullptr;
+    QPushButton* generateButton = nullptr;
+    QLabel* statusLabel = nullptr;
 };
