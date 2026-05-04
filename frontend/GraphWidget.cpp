@@ -3,6 +3,7 @@
 #include <QBrush>
 #include <QFont>
 #include <QGraphicsEllipseItem>
+#include <QGraphicsItem>
 #include <QGraphicsPathItem>
 #include <QGraphicsScene>
 #include <QGraphicsTextItem>
@@ -27,10 +28,9 @@ namespace
 {
     constexpr double kNodeRadius = 22.0;
 
-    QPainterPath arrowHead(const QPointF& start, const QPointF& end)
+    QPainterPath arrowHead(const QPointF& start, const QPointF& end, double size)
     {
         const double angle = std::atan2(end.y() - start.y(), end.x() - start.x());
-        const double size = 12.0;
         QPointF p1 = end - QPointF(std::cos(angle - 3.14159265358979323846 / 6.0) * size, std::sin(angle - 3.14159265358979323846 / 6.0) * size);
         QPointF p2 = end - QPointF(std::cos(angle + 3.14159265358979323846 / 6.0) * size, std::sin(angle + 3.14159265358979323846 / 6.0) * size);
 
@@ -51,8 +51,8 @@ namespace
     class ZoomableGraphicsView final : public QGraphicsView
     {
     public:
-        explicit ZoomableGraphicsView(QGraphicsScene* scene, QWidget* parent = nullptr)
-            : QGraphicsView(scene, parent)
+        explicit ZoomableGraphicsView(QGraphicsScene* scene, GraphWidget* owner, QWidget* parent = nullptr)
+            : QGraphicsView(scene, parent), owner_(owner)
         {
             setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
             setResizeAnchor(QGraphicsView::AnchorUnderMouse);
@@ -66,6 +66,8 @@ namespace
             if (event->modifiers() & Qt::ControlModifier) {
                 const double zoomFactor = event->angleDelta().y() > 0 ? 1.15 : 1.0 / 1.15;
                 scale(zoomFactor, zoomFactor);
+                if (owner_)
+                    owner_->refreshViewportItems();
                 event->accept();
                 return;
             }
@@ -115,6 +117,7 @@ namespace
         }
 
     private:
+        GraphWidget* owner_ = nullptr;
         bool isPanning_ = false;
         QPoint lastPanPoint_;
     };
@@ -151,7 +154,7 @@ GraphWidget::GraphWidget(QWidget* parent)
     setObjectName("Panel");
 
     scene_ = new QGraphicsScene(this);
-    view_ = new ZoomableGraphicsView(scene_, this);
+    view_ = new ZoomableGraphicsView(scene_, this, this);
     view_->setRenderHint(QPainter::Antialiasing);
     view_->setBackgroundBrush(QBrush(QColor(8, 13, 30)));
     view_->setFrameShape(QFrame::NoFrame);
@@ -197,6 +200,21 @@ QString GraphWidget::formatNumber(double value) const
 }
 
 
+double GraphWidget::currentViewScale() const
+{
+    if (!view_)
+        return 1.0;
+
+    const double scale = std::abs(view_->transform().m11());
+    return std::max(0.001, scale);
+}
+
+void GraphWidget::refreshViewportItems()
+{
+    redraw();
+}
+
+
 void GraphWidget::redraw()
 {
     scene_->clear();
@@ -233,6 +251,10 @@ void GraphWidget::redraw()
         ++index;
     }
 
+    const double viewScale = currentViewScale();
+    const double nodeOffset = kNodeRadius / viewScale;
+    const double arrowSize = 12.0 / viewScale;
+
     auto* title = scene_->addText(state_.hasResult
         ? QString("Solutie curenta: z*=%1 | click pe muchie pentru detalii").arg(formatNumber(state_.resultZ))
         : "Graf incarcat | click pe muchie pentru detalii");
@@ -256,8 +278,8 @@ void GraphWidget::redraw()
             continue;
         dir /= len;
 
-        QPointF start = a + dir * kNodeRadius;
-        QPointF end = b - dir * kNodeRadius;
+        QPointF start = a + dir * nodeOffset;
+        QPointF end = b - dir * nodeOffset;
 
         QColor color = edge.isNew ? QColor(145, 135, 160) : QColor(122, 137, 158);
         double width = 2.2;
@@ -276,6 +298,7 @@ void GraphWidget::redraw()
         }
 
         QPen pen(color, width, edge.isNew ? Qt::DashLine : Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        pen.setCosmetic(true);
 
         QPainterPath path;
         path.moveTo(start);
@@ -283,11 +306,11 @@ void GraphWidget::redraw()
         auto* line = scene_->addPath(path, pen);
         line->setZValue(selected ? 3 : 1);
 
-        auto* arrow = scene_->addPath(arrowHead(start, end), pen, QBrush(color));
+        auto* arrow = scene_->addPath(arrowHead(start, end, arrowSize), pen, QBrush(color));
         arrow->setZValue(selected ? 4 : 2);
 
         QPainterPathStroker stroker;
-        stroker.setWidth(18.0);
+        stroker.setWidth(18.0 / viewScale);
         auto* clickable = new EdgeItem(this, edge, stroker.createStroke(path));
         clickable->setPen(Qt::NoPen);
         clickable->setBrush(Qt::NoBrush);
@@ -297,13 +320,19 @@ void GraphWidget::redraw()
 
     for (int node : nodes) {
         const QPointF p = pos[node];
-        QRectF rect(p.x() - kNodeRadius, p.y() - kNodeRadius, kNodeRadius * 2.0, kNodeRadius * 2.0);
-        auto* circle = scene_->addEllipse(rect, QPen(QColor(110, 190, 255), 2.0), QBrush(QColor(22, 63, 108)));
+        QRectF rect(-kNodeRadius, -kNodeRadius, kNodeRadius * 2.0, kNodeRadius * 2.0);
+        QPen nodePen(QColor(110, 190, 255), 2.0);
+        nodePen.setCosmetic(true);
+
+        auto* circle = scene_->addEllipse(rect, nodePen, QBrush(QColor(22, 63, 108)));
+        circle->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+        circle->setPos(p);
         circle->setZValue(10);
 
         auto* text = scene_->addText(QString::number(node));
         text->setDefaultTextColor(Qt::white);
         text->setFont(QFont("Segoe UI", 11, QFont::Bold));
+        text->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
         QRectF br = text->boundingRect();
         text->setPos(p.x() - br.width() / 2.0, p.y() - br.height() / 2.0);
         text->setZValue(11);

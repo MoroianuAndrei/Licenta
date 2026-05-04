@@ -21,12 +21,16 @@ public:
     void clearSelection();
     void selectEdge(const VisualEdge& edge);
 
+    // Called after zoom so node size, arrow size and pen widths remain visually stable.
+    void refreshViewportItems();
+
 signals:
     void edgeSelected(const VisualEdge& edge);
 
 private:
     void redraw();
     QString formatNumber(double value) const;
+    double currentViewScale() const;
 
     QGraphicsScene* scene_ = nullptr;
     QGraphicsView* view_ = nullptr;
