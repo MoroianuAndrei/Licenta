@@ -2,22 +2,23 @@
 
 #include <QBrush>
 #include <QFont>
+#include <QFrame>
 #include <QGraphicsEllipseItem>
 #include <QGraphicsItem>
 #include <QGraphicsPathItem>
 #include <QGraphicsScene>
+#include <QGraphicsSceneMouseEvent>
+#include <QGraphicsSimpleTextItem>
 #include <QGraphicsTextItem>
 #include <QGraphicsView>
-#include <QGraphicsSceneMouseEvent>
-#include <QFrame>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPainterPathStroker>
 #include <QPen>
+#include <QScrollBar>
 #include <QVBoxLayout>
 #include <QWheelEvent>
-#include <QMouseEvent>
-#include <QScrollBar>
 
 #include <algorithm>
 #include <cmath>
@@ -26,13 +27,28 @@
 
 namespace
 {
-    constexpr double kNodeRadius = 22.0;
+    constexpr double kBaseNodeRadius = 22.0;   // visual px
+    constexpr double kBaseArrowSize = 13.0;    // visual px
+    constexpr double kPi = 3.14159265358979323846;
 
-    QPainterPath arrowHead(const QPointF& start, const QPointF& end, double size)
+    bool sameEdge(const VisualEdge& a, const VisualEdge& b)
+    {
+        return a.from == b.from && a.to == b.to;
+    }
+
+    QPainterPath makeArrowHead(const QPointF& start, const QPointF& end, double size)
     {
         const double angle = std::atan2(end.y() - start.y(), end.x() - start.x());
-        QPointF p1 = end - QPointF(std::cos(angle - 3.14159265358979323846 / 6.0) * size, std::sin(angle - 3.14159265358979323846 / 6.0) * size);
-        QPointF p2 = end - QPointF(std::cos(angle + 3.14159265358979323846 / 6.0) * size, std::sin(angle + 3.14159265358979323846 / 6.0) * size);
+
+        const QPointF p1 = end - QPointF(
+            std::cos(angle - kPi / 6.0) * size,
+            std::sin(angle - kPi / 6.0) * size
+        );
+
+        const QPointF p2 = end - QPointF(
+            std::cos(angle + kPi / 6.0) * size,
+            std::sin(angle + kPi / 6.0) * size
+        );
 
         QPainterPath path;
         path.moveTo(end);
@@ -41,12 +57,6 @@ namespace
         path.closeSubpath();
         return path;
     }
-
-    bool sameEdge(const VisualEdge& a, const VisualEdge& b)
-    {
-        return a.from == b.from && a.to == b.to;
-    }
-
 
     class ZoomableGraphicsView final : public QGraphicsView
     {
@@ -66,8 +76,10 @@ namespace
             if (event->modifiers() & Qt::ControlModifier) {
                 const double zoomFactor = event->angleDelta().y() > 0 ? 1.15 : 1.0 / 1.15;
                 scale(zoomFactor, zoomFactor);
+
                 if (owner_)
                     owner_->refreshViewportItems();
+
                 event->accept();
                 return;
             }
@@ -131,7 +143,7 @@ namespace
             setAcceptedMouseButtons(Qt::LeftButton);
             setAcceptHoverEvents(true);
             setCursor(Qt::PointingHandCursor);
-            setZValue(5);
+            setZValue(20);
         }
 
     protected:
@@ -192,13 +204,19 @@ void GraphWidget::selectEdge(const VisualEdge& edge)
     redraw();
 }
 
+void GraphWidget::setLargeGraphMode(bool enabled)
+{
+    largeGraphMode_ = enabled;
+    redraw();
+}
+
 QString GraphWidget::formatNumber(double value) const
 {
     if (std::abs(value - std::round(value)) < 1e-6)
-        return QString::number((int)std::round(value));
+        return QString::number(static_cast<int>(std::round(value)));
+
     return QString::number(value, 'f', 2);
 }
-
 
 double GraphWidget::currentViewScale() const
 {
@@ -214,7 +232,6 @@ void GraphWidget::refreshViewportItems()
     redraw();
 }
 
-
 void GraphWidget::redraw()
 {
     scene_->clear();
@@ -224,7 +241,30 @@ void GraphWidget::redraw()
         text->setDefaultTextColor(QColor(190, 205, 225));
         text->setFont(QFont("Segoe UI", 12, QFont::Bold));
         text->setPos(40, 40);
+
         scene_->setSceneRect(0, 0, 720, 440);
+
+        if (autoFitPending_) {
+            view_->resetTransform();
+            view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
+            autoFitPending_ = false;
+        }
+        return;
+    }
+
+    if (largeGraphMode_) {
+        auto* text = scene_->addText(
+            "Large graph loaded.\n"
+            "Graph visualization is disabled for performance.\n"
+            "Use the generated CSV for algorithm benchmarks."
+        );
+        text->setDefaultTextColor(QColor(220, 235, 255));
+        text->setFont(QFont("Segoe UI", 14, QFont::Bold));
+        text->setTextWidth(520);
+        text->setPos(80, 80);
+
+        scene_->setSceneRect(0, 0, 720, 440);
+
         if (autoFitPending_) {
             view_->resetTransform();
             view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
@@ -241,26 +281,41 @@ void GraphWidget::redraw()
 
     std::map<int, QPointF> pos;
     const QPointF center(390.0, 260.0);
-    const double radius = 205.0;
+    const double radius = std::max(210.0, nodes.size() * 6.0);
     int index = 0;
-    const int n = std::max(1, (int)nodes.size());
+    const int n = std::max(1, static_cast<int>(nodes.size()));
 
     for (int node : nodes) {
-        const double angle = -3.14159265358979323846 / 2.0 + 2.0 * 3.14159265358979323846 * index / n;
-        pos[node] = QPointF(center.x() + radius * std::cos(angle), center.y() + radius * std::sin(angle));
+        const double angle = -kPi / 2.0 + 2.0 * kPi * index / n;
+        pos[node] = QPointF(
+            center.x() + radius * std::cos(angle),
+            center.y() + radius * std::sin(angle)
+        );
         ++index;
     }
 
-    const double viewScale = currentViewScale();
-    const double nodeOffset = kNodeRadius / viewScale;
-    const double arrowSize = 12.0 / viewScale;
+    QRectF layoutRect;
+    for (const auto& item : pos) {
+        if (layoutRect.isNull())
+            layoutRect = QRectF(item.second, QSizeF(1, 1));
+        else
+            layoutRect = layoutRect.united(QRectF(item.second, QSizeF(1, 1)));
+    }
 
-    auto* title = scene_->addText(state_.hasResult
-        ? QString("Solutie curenta: z*=%1 | click pe muchie pentru detalii").arg(formatNumber(state_.resultZ))
-        : "Graf incarcat | click pe muchie pentru detalii");
-    title->setDefaultTextColor(QColor(220, 235, 255));
-    title->setFont(QFont("Segoe UI", 11, QFont::Bold));
-    title->setPos(18, 16);
+    scene_->setSceneRect(layoutRect.adjusted(-120, -120, 120, 120));
+
+    if (autoFitPending_) {
+        view_->resetTransform();
+        view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
+        autoFitPending_ = false;
+    }
+
+    const double scale = currentViewScale();
+    const double invScale = 1.0 / scale;
+
+    const double nodeRadius = kBaseNodeRadius * invScale;
+    const double arrowSize = kBaseArrowSize * invScale;
+    const double clickableWidth = 18.0 * invScale;
 
     for (const auto& edge : edges_) {
         const bool used = state_.hasResult && edgeIsInPath(edge, state_.path);
@@ -270,78 +325,81 @@ void GraphWidget::redraw()
 
         const bool selected = selectedEdge_ && sameEdge(edge, *selectedEdge_);
 
-        QPointF a = pos[edge.from];
-        QPointF b = pos[edge.to];
+        const QPointF a = pos[edge.from];
+        const QPointF b = pos[edge.to];
         QPointF dir = b - a;
         const double len = std::hypot(dir.x(), dir.y());
         if (len <= 1e-9)
             continue;
         dir /= len;
 
-        QPointF start = a + dir * nodeOffset;
-        QPointF end = b - dir * nodeOffset;
+        const QPointF start = a + dir * nodeRadius;
+        const QPointF end = b - dir * nodeRadius;
 
         QColor color = edge.isNew ? QColor(145, 135, 160) : QColor(122, 137, 158);
-        double width = 2.2;
+        double visualWidth = 2.2;
 
         if (used) {
             color = edge.isNew ? QColor(38, 225, 128) : QColor(25, 150, 255);
-            width = 4.0;
+            visualWidth = 4.0;
         }
 
         if (selected) {
-            if (used)
-                color = edge.isNew ? QColor(96, 255, 168) : QColor(90, 190, 255);
-            else
-                color = QColor(205, 215, 230);
-            width += 3.0;
+            color = used
+                ? (edge.isNew ? QColor(96, 255, 168) : QColor(90, 190, 255))
+                : QColor(205, 215, 230);
+            visualWidth += 3.0;
         }
 
-        QPen pen(color, width, edge.isNew ? Qt::DashLine : Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-        pen.setCosmetic(true);
+        QPen pen(color, visualWidth * invScale, edge.isNew ? Qt::DashLine : Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 
         QPainterPath path;
         path.moveTo(start);
         path.lineTo(end);
-        auto* line = scene_->addPath(path, pen);
-        line->setZValue(selected ? 3 : 1);
 
-        auto* arrow = scene_->addPath(arrowHead(start, end, arrowSize), pen, QBrush(color));
-        arrow->setZValue(selected ? 4 : 2);
+        auto* line = scene_->addPath(path, pen);
+        line->setZValue(selected ? 4 : 1);
+
+        auto* arrow = scene_->addPath(makeArrowHead(start, end, arrowSize), pen, QBrush(color));
+        arrow->setZValue(selected ? 5 : 2);
 
         QPainterPathStroker stroker;
-        stroker.setWidth(18.0 / viewScale);
+        stroker.setWidth(clickableWidth);
         auto* clickable = new EdgeItem(this, edge, stroker.createStroke(path));
         clickable->setPen(Qt::NoPen);
         clickable->setBrush(Qt::NoBrush);
         scene_->addItem(clickable);
-
     }
+
+    const bool showNodeLabels = nodes.size() <= 200;
 
     for (int node : nodes) {
         const QPointF p = pos[node];
-        QRectF rect(-kNodeRadius, -kNodeRadius, kNodeRadius * 2.0, kNodeRadius * 2.0);
-        QPen nodePen(QColor(110, 190, 255), 2.0);
-        nodePen.setCosmetic(true);
 
-        auto* circle = scene_->addEllipse(rect, nodePen, QBrush(QColor(22, 63, 108)));
-        circle->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+        // The node item ignores the view transformation, so it keeps the same
+        // visual size while zooming. Its local coordinate system is centered
+        // in (0, 0), and the item is positioned at the logical node position.
+        auto* circle = scene_->addEllipse(
+            -kBaseNodeRadius,
+            -kBaseNodeRadius,
+            kBaseNodeRadius * 2.0,
+            kBaseNodeRadius * 2.0,
+            QPen(QColor(110, 190, 255), 2.0),
+            QBrush(QColor(22, 63, 108))
+        );
         circle->setPos(p);
+        circle->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
         circle->setZValue(10);
 
-        auto* text = scene_->addText(QString::number(node));
-        text->setDefaultTextColor(Qt::white);
-        text->setFont(QFont("Segoe UI", 11, QFont::Bold));
-        text->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
-        QRectF br = text->boundingRect();
-        text->setPos(p.x() - br.width() / 2.0, p.y() - br.height() / 2.0);
-        text->setZValue(11);
+        if (showNodeLabels) {
+            auto* text = new QGraphicsSimpleTextItem(QString::number(node), circle);
+            text->setBrush(QBrush(Qt::white));
+            text->setFont(QFont("Segoe UI", 11, QFont::Bold));
+
+            const QRectF br = text->boundingRect();
+            text->setPos(-br.width() / 2.0, -br.height() / 2.0);
+            text->setZValue(11);
+        }
     }
 
-    scene_->setSceneRect(scene_->itemsBoundingRect().adjusted(-80, -80, 80, 80));
-    if (autoFitPending_) {
-        view_->resetTransform();
-        view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
-        autoFitPending_ = false;
-    }
 }
