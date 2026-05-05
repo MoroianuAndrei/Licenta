@@ -1,4 +1,4 @@
-﻿#include "ParametricSearch.h"
+#include "ParametricSearch.h"
 #include <algorithm>
 #include <set>
 #include <cmath>
@@ -210,16 +210,20 @@ ParametricResult ParametricSearch::solve(const Graph& G, double W)
 
     double finalCost = finalFunc.isInfinity() ? 0.0 : finalFunc.eval(optimal_z);
 
-    // Reconstructia drumului P*
+    // ------------------------------------------------------------------------
+    // Reconstruim solutia finala folosind oracolul AMCMCPEP pentru z*.
+    // Motiv: vectorul parent din faza parametrica poate ramane incomplet pentru
+    // afisarea in UI, chiar daca z* a fost calculat corect. AMCMCPEP intoarce
+    // drumul concret P*, care poate fi colorat si afisat in ResultWidget.
+    // ------------------------------------------------------------------------
     std::vector<int> path;
-    int curr = G.getTarget();
-    while (curr != -1 && curr != G.getSource())
+    AMCMCPEP_Result finalRes = oracle.solve(G, optimal_z);
+
+    if (finalRes.isFeasible && !finalRes.path.empty())
     {
-        path.push_back(curr);
-        curr = parent[curr];
+        path = finalRes.path;
+        finalCost = finalRes.totalCost;
     }
-    if (curr == G.getSource()) path.push_back(G.getSource());
-    std::reverse(path.begin(), path.end());
 
     return { optimal_z, finalCost, path };
 }
