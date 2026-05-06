@@ -5,9 +5,9 @@
 #include <vector>
 
 struct ParametricResult {
-    double           maxCapacity; // z* optim
-    double           finalCost;   // Costul final
-    std::vector<int> path;        // Drumul P*
+    double           maxCapacity;
+    double           finalCost;
+    std::vector<int> path;
 };
 
 class ParametricSearch {
@@ -17,6 +17,5 @@ private:
     std::vector<double> buildSortedCriticalValues(const Graph& G, double zmax);
 
 public:
-    // Algorithm 4 - Megiddo parametric search, cazul liniar
     ParametricResult solve(const Graph& G, double W);
 };

@@ -41,10 +41,6 @@ namespace
 
         if (edge.isNew)
         {
-            // Arc nou din A^a:
-            // b(w,z) = 4 * |j-i| * z
-            // u(w,z) = |j-i| * (z - 10)^2
-            // Am folosit max(0,z-10) pentru ca functia sa ramana monotona si pentru z < 10.
             auto u = [distance](double z) {
                 const double delta = positivePart(z - 10.0);
                 return distance * delta * delta;
@@ -57,9 +53,6 @@ namespace
             return Edge(from, to, c, edge.cHat, true, u, b);
         }
 
-        // Arc existent din A:
-        // b(w,z) = 10 * |j-i| * max(0, z - c(w))
-        // u(w,z) = |j-i| * max(0, z - c(w))^2
         auto u = [distance, c](double z) {
             const double delta = positivePart(z - c);
             return distance * delta * delta;
@@ -74,9 +67,6 @@ namespace
 
     Edge buildLinearEdge(const CsvEdge& edge)
     {
-        // Constructorul liniar trebuie sa seteze intern:
-        // b(w,z) = rate * max(0, z - c(w)) si u(w,z) = 0.
-        // Pentru arce noi, c(w) este de obicei 0, deci b(w,z)=rate*z.
         return Edge(edge.from, edge.to, edge.c, edge.cHat, edge.isNew, edge.rate);
     }
 }
@@ -91,8 +81,6 @@ Graph loadGraphFromCSV(const std::string& filename, CostModel costModel)
 
     std::string line;
 
-    // Header asteptat:
-    // from,to,c,c_hat,is_new,rate
     std::getline(file, line);
 
     std::vector<CsvEdge> edges;

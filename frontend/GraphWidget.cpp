@@ -237,11 +237,6 @@ void GraphWidget::redraw()
     scene_->clear();
 
     if (edges_.empty()) {
-        auto* text = scene_->addText("Importa un fisier CSV pentru a vizualiza graful.");
-        text->setDefaultTextColor(QColor(190, 205, 225));
-        text->setFont(QFont("Segoe UI", 12, QFont::Bold));
-        text->setPos(40, 40);
-
         scene_->setSceneRect(0, 0, 720, 440);
 
         if (autoFitPending_) {

@@ -1,9 +1,6 @@
 #include "edge.h"
 #include <utility>
 
-// ============================================================================
-// Constructor GENERAL
-// ============================================================================
 Edge::Edge(int from, int to, double capacity, double max_capacity, bool isNew,
     std::function<double(double)> func_u,
     std::function<double(double)> func_b)
@@ -13,11 +10,6 @@ Edge::Edge(int from, int to, double capacity, double max_capacity, bool isNew,
 {
 }
 
-// ============================================================================
-// Constructor LINIAR - Section 3.1 din paper
-// b(w, z) = rate * (z - c(w))
-// u(w, z) = 0
-// ============================================================================
 Edge::Edge(int from, int to, double capacity, double max_capacity, bool isNew,
     double rate)
     : from(from), to(to), c(capacity), c_hat(max_capacity),
@@ -26,18 +18,13 @@ Edge::Edge(int from, int to, double capacity, double max_capacity, bool isNew,
     double cap = capacity;
     double r = rate;
 
-    // b(w, z) = r * (z - c),  0 daca z <= c  (Formula 4 din paper)
     b = [cap, r](double z) -> double {
         return (z <= cap) ? 0.0 : r * (z - cap);
         };
 
-    // u(w, z) = 0 in cazul liniar (Section 3.1)
     u = [](double) -> double { return 0.0; };
 }
 
-// ============================================================================
-// Getteri / Setteri
-// ============================================================================
 int    Edge::getFrom()        const { return from; }
 int    Edge::getTo()          const { return to; }
 double Edge::getCapacity()    const { return c; }
@@ -57,8 +44,6 @@ void Edge::setMaxCapacity(double newMaxCapacity)
 double Edge::getSumCost(double z) const { return b(z); }
 double Edge::getMaxCost(double z) const { return u(z); }
 
-// r_w: daca a fost setat explicit (constructor liniar) il returnam direct.
-// Altfel il calculam prin diferenta finita - corect pentru orice b liniara.
 double Edge::getLinearRate() const
 {
     if (linearRate != 0.0) return linearRate;

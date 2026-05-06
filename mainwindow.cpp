@@ -66,8 +66,8 @@ void MainWindow::buildUi()
     loadRunLayout->addLayout(centerLayout, 1);
     loadRunLayout->addWidget(edgeDetails_);
 
-    stackedWidget_->addWidget(generateGraphWidget_); // index 0
-    stackedWidget_->addWidget(loadRunPage_);         // index 1
+    stackedWidget_->addWidget(generateGraphWidget_);
+    stackedWidget_->addWidget(loadRunPage_);
     stackedWidget_->setCurrentWidget(loadRunPage_);
 
     auto* rootLayout = new QHBoxLayout(central);
@@ -224,7 +224,7 @@ std::vector<VisualEdge> MainWindow::loadVisualEdgesFromCSV(const QString& fileNa
     }
 
     std::string line;
-    std::getline(file, line); // header
+    std::getline(file, line);
 
     std::vector<VisualEdge> edges;
     int lineNumber = 1;

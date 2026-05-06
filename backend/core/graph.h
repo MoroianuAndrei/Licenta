@@ -9,7 +9,6 @@ private:
     int s;
     int t;
 
-    // Lista de adiacenta: adj[i] contine toate arcele care pleaca din nodul i
     std::vector<std::vector<Edge>> adj;
 
 public:
@@ -25,9 +24,6 @@ public:
 
     std::vector<Edge> getAllEdges() const;
 
-    // Dijkstra bottleneck - Maximum Capacity Path
-    // useMaxCapacities = false => MCP in G original (ignora arcele noi, foloseste c(w))
-    // useMaxCapacities = true  => MCP in G_hat      (foloseste c_hat(w) pe toate arcele)
     double findMCP(bool useMaxCapacities) const;
 
     std::pair<double, std::vector<int>> findMCPWithPath(bool useMaxCapacities) const;

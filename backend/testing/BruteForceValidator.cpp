@@ -27,7 +27,6 @@ double BruteForceValidator::computePathCost(const Graph& G, const std::vector<in
         if (e == nullptr)
             return std::numeric_limits<double>::infinity();
 
-        // Drumul nu e admis in G^E pentru pragul z
         if (e->getMaxCapacity() < z)
             return std::numeric_limits<double>::infinity();
 
@@ -65,11 +64,9 @@ void BruteForceValidator::dfsAllPaths(
     {
         int next = e.getTo();
 
-        // Fezabilitate in G^E
         if (e.getMaxCapacity() < z)
             continue;
 
-        // Doar drumuri simple
         if (visited[next])
             continue;
 
