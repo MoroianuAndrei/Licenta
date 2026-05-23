@@ -25,6 +25,8 @@ WIN32 MACOSX_BUNDLE
     frontend/ControlPanelWidget.cpp
     frontend/GenerateGraphWidget.h
     frontend/GenerateGraphWidget.cpp
+    frontend/BenchmarkWidget.h
+    frontend/BenchmarkWidget.cpp
 
     backend/core/node.h
     backend/core/node.cpp
@@ -50,6 +52,8 @@ WIN32 MACOSX_BUNDLE
     backend/testing/TestUtils.cpp
     backend/testing/ValidationTests.h
     backend/testing/ValidationTests.cpp
+    backend/testing/PerformanceTest.h
+    backend/testing/PerformanceTest.cpp
 
     backend/io/GraphLoader.h
     backend/io/GraphLoader.cpp

@@ -11,6 +11,7 @@
 #include "frontend/GraphWidget.h"
 #include "frontend/ResultWidget.h"
 #include "frontend/SidebarWidget.h"
+#include "frontend/BenchmarkWidget.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -46,6 +47,7 @@ void MainWindow::buildUi()
     stackedWidget_ = new QStackedWidget(this);
 
     generateGraphWidget_ = new GenerateGraphWidget(this);
+    benchmarkWidget_ = new BenchmarkWidget(this);
 
     loadRunPage_ = new QWidget(this);
     controls_ = new ControlPanelWidget(loadRunPage_);
@@ -68,6 +70,7 @@ void MainWindow::buildUi()
 
     stackedWidget_->addWidget(generateGraphWidget_);
     stackedWidget_->addWidget(loadRunPage_);
+    stackedWidget_->addWidget(benchmarkWidget_);
     stackedWidget_->setCurrentWidget(loadRunPage_);
 
     auto* rootLayout = new QHBoxLayout(central);
@@ -82,6 +85,10 @@ void MainWindow::buildUi()
 
     connect(sidebar_, &SidebarWidget::loadRunClicked, this, [this]() {
         stackedWidget_->setCurrentWidget(loadRunPage_);
+        });
+
+    connect(sidebar_, &SidebarWidget::benchmarkClicked, this, [this]() {
+        stackedWidget_->setCurrentWidget(benchmarkWidget_);
         });
 
     connect(generateGraphWidget_, &GenerateGraphWidget::graphGenerated,
@@ -381,7 +388,7 @@ void MainWindow::onRunClicked()
     refreshViewState();
 
     const QString selectedAlgo = controls_->currentAlgorithm();
-    const double inputValue = controls_->parameterValue();
+    const double  inputValue = controls_->parameterValue();
     const QString parameterName = (selectedAlgo == "AMCMCPEP") ? "z" : "W";
 
     resultWidget_->appendLog(
@@ -492,7 +499,6 @@ void MainWindow::onRunClicked()
 void MainWindow::onAlgorithmChanged(const QString& algorithm)
 {
     Q_UNUSED(algorithm);
-
     resetResultState();
     refreshViewState();
 }
@@ -500,7 +506,6 @@ void MainWindow::onAlgorithmChanged(const QString& algorithm)
 void MainWindow::onParameterChanged(double value)
 {
     Q_UNUSED(value);
-
     resetResultState();
     refreshViewState();
 }

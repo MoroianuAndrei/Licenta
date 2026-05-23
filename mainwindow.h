@@ -10,6 +10,7 @@
 
 #include "backend/core/graph.h"
 #include "frontend/UiModels.h"
+#include "frontend/BenchmarkWidget.h"
 
 class ControlPanelWidget;
 class EdgeDetailsWidget;
@@ -53,6 +54,7 @@ private:
     QStackedWidget* stackedWidget_ = nullptr;
     QWidget* loadRunPage_ = nullptr;
     GenerateGraphWidget* generateGraphWidget_ = nullptr;
+    BenchmarkWidget* benchmarkWidget_ = nullptr;
 
     ControlPanelWidget* controls_ = nullptr;
     GraphWidget* graphWidget_ = nullptr;

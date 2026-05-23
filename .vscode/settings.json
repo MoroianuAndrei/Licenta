@@ -1,0 +1,12 @@
+{
+  "cmake.configurePreset": "Qt-Debug",
+  "cmake.buildPreset": "Qt-Debug",
+  "cmake.buildDirectory": "${workspaceFolder}/out/build/debug",
+  "cmake.installPrefix": "${workspaceFolder}/out/install/debug",
+  "cmake.parallelJobs": 0,
+  "files.associations": {
+    "*.h": "cpp",
+    "*.cpp": "cpp"
+  },
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
+}

@@ -22,6 +22,7 @@ SidebarWidget::SidebarWidget(QWidget* parent)
 
     generateButton = new QPushButton("Generate Graph CSV");
     loadRunButton = new QPushButton("Load & Run CSV");
+    benchmarkButton = new QPushButton("Benchmark");
 
     QString buttonStyle =
         "QPushButton {"
@@ -37,13 +38,31 @@ SidebarWidget::SidebarWidget(QWidget* parent)
         "background-color: #263044;"
         "}";
 
+    QString benchmarkStyle =
+        "QPushButton {"
+        "background-color: #1a3a5c;"
+        "color: #7dd3fc;"
+        "border: 1px solid #27446f;"
+        "border-radius: 12px;"
+        "padding: 14px;"
+        "font-size: 15px;"
+        "font-weight: 700;"
+        "text-align: left;"
+        "}"
+        "QPushButton:hover {"
+        "background-color: #1e4a78;"
+        "color: #bae6fd;"
+        "}";
+
     generateButton->setStyleSheet(buttonStyle);
     loadRunButton->setStyleSheet(buttonStyle);
+    benchmarkButton->setStyleSheet(benchmarkStyle);
 
     layout->addWidget(title);
     layout->addSpacing(24);
     layout->addWidget(generateButton);
     layout->addWidget(loadRunButton);
+    layout->addWidget(benchmarkButton);
     layout->addStretch();
 
     setStyleSheet("background-color: #070b18;");
@@ -53,4 +72,7 @@ SidebarWidget::SidebarWidget(QWidget* parent)
 
     connect(loadRunButton, &QPushButton::clicked,
         this, &SidebarWidget::loadRunClicked);
+
+    connect(benchmarkButton, &QPushButton::clicked,
+        this, &SidebarWidget::benchmarkClicked);
 }

@@ -1,0 +1,40 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "▶ Run Licenta (Debug)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/out/build/debug/Licenta.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "PATH",
+          "value": "D:/Qt/6.9.3/msvc2022_64/bin;${env:PATH}"
+        }
+      ],
+      "console": "externalTerminal",
+      "preLaunchTask": "CMake: Build Debug"
+    },
+    {
+      "name": "🐛 Debug Licenta (cu breakpoints)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/out/build/debug/Licenta.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "PATH",
+          "value": "D:/Qt/6.9.3/msvc2022_64/bin;${env:PATH}"
+        }
+      ],
+      "console": "internalConsole",
+      "preLaunchTask": "CMake: Build Debug",
+      "visualizerFile": "${workspaceFolder}/.vscode/qt.natvis"
+    }
+  ]
+}

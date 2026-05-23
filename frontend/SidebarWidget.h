@@ -14,8 +14,10 @@ public:
 signals:
     void generateGraphClicked();
     void loadRunClicked();
+    void benchmarkClicked();
 
 private:
     QPushButton* generateButton;
     QPushButton* loadRunButton;
+    QPushButton* benchmarkButton;
 };
