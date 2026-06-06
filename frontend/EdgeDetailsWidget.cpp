@@ -45,21 +45,13 @@ void EdgeDetailsWidget::setEdge(const VisualEdge& edge)
     render();
 }
 
-QString EdgeDetailsWidget::formatNumber(double value) const
-{
-    if (std::abs(value - std::round(value)) < 1e-6)
-        return QString::number((int)std::round(value));
-    return QString::number(value, 'f', 2);
-}
-
 QString EdgeDetailsWidget::costDetails(const VisualEdge& edge) const
 {
     const double z = state_.hasResult ? state_.resultZ : state_.inputValue;
 
     if (state_.algorithm == "AMCMCPEP") {
-        const double d = std::abs(edge.to - edge.from);
-        double b = 0.0;
-        double u = 0.0;
+        const double d    = std::abs(edge.to - edge.from);
+        double b = 0.0, u = 0.0;
 
         if (!edge.isNew) {
             const double diff = std::max(0.0, z - edge.capacity);
@@ -125,3 +117,4 @@ void EdgeDetailsWidget::render()
 
     content_->setText(html);
 }
+

@@ -5,61 +5,45 @@
 #include "backend/io/GraphLoader.h"
 
 #include <chrono>
-#include <fstream>
+#include <cmath>
 #include <cstdio>
-#include <filesystem>
+#include <fstream>
 
-// ----------------------------------------------------------------
-// Wrapper peste AMCMCPEP care numara apelurile
-// ----------------------------------------------------------------
-static int g_amcpebcp_calls = 0;
-static int g_parametric_calls = 0;
-
-// ----------------------------------------------------------------
-// Helper: genereaza graf random cu costuri liniare intr-un fisier
-// temporar si il incarca
-// ----------------------------------------------------------------
-static Graph generateLinearGraph(int nodes, unsigned int seed)
+static Graph generateLinearGraph(int nodes, int maxCapacityLimit, unsigned int seed)
 {
     RandomGraphParams params;
-    params.nodes = nodes;
-    params.paths = std::max(2, nodes / 5);
-    params.cycles = std::max(1, nodes / 10);
+    params.nodes              = nodes;
+    params.paths              = std::max(2, nodes / 5);
+    params.cycles             = std::max(1, nodes / 10);
     params.extraArcProbability = 0.05;
-    params.minCapacity = 5;
-    params.maxCapacity = 50;
-    params.maxCapacityLimit = 100;
-    params.minRate = 1;
-    params.maxRate = 10;
-    params.newArcProbability = 0.10;
-    params.seed = seed;
+    params.minCapacity        = 1;
+    params.maxCapacity        = std::max(2, maxCapacityLimit / 3);
+    params.maxCapacityLimit   = maxCapacityLimit;
+    params.minRate            = 1;
+    params.maxRate            = 10;
+    params.newArcProbability  = 0.10;
+    params.seed               = seed;
 
-    std::string tmpFile = "benchmark_tmp.csv";
+    const std::string tmpFile = "benchmark_tmp.csv";
 
     RandomGraphGenerator gen(params);
     gen.generateToCSV(tmpFile);
 
     Graph G = loadGraphFromCSV(tmpFile, CostModel::Linear);
-
     std::remove(tmpFile.c_str());
 
     return G;
 }
 
-// ----------------------------------------------------------------
-// runSingle
-// ----------------------------------------------------------------
-BenchmarkEntry PerformanceTest::runSingle(int nodes, double W, unsigned int seed)
+BenchmarkEntry PerformanceTest::runSingle(int nodes, double W, int maxCapacityLimit, unsigned int seed)
 {
     BenchmarkEntry entry{};
     entry.nodes = nodes;
-    entry.W = W;
+    entry.W     = W;
 
-    Graph G = generateLinearGraph(nodes, seed);
-
+    Graph G   = generateLinearGraph(nodes, maxCapacityLimit, seed);
     entry.edges = (int)G.getAllEdges().size();
 
-    // --- AMCPEBCP ---
     {
         auto t0 = std::chrono::high_resolution_clock::now();
 
@@ -68,13 +52,10 @@ BenchmarkEntry PerformanceTest::runSingle(int nodes, double W, unsigned int seed
 
         auto t1 = std::chrono::high_resolution_clock::now();
 
-        entry.amcpebcp_time_ms =
-            std::chrono::duration<double, std::milli>(t1 - t0).count();
-        entry.amcpebcp_result_z = res.maxCapacity;
+        entry.amcpebcp_time_ms     = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        entry.amcpebcp_result_z    = res.maxCapacity;
         entry.amcpebcp_result_cost = res.finalCost;
 
-        // Numarul de apeluri AMCMCPEP = log2(zmax - zmin) iteratii
-        // Calculat din dimensiunea intervalului binary search
         double zmin = G.findMCP(false);
         double zmax = G.findMCP(true);
         int interval = (int)(zmax - zmin);
@@ -83,7 +64,6 @@ BenchmarkEntry PerformanceTest::runSingle(int nodes, double W, unsigned int seed
             : 1;
     }
 
-    // --- Parametric Search ---
     {
         auto t0 = std::chrono::high_resolution_clock::now();
 
@@ -92,50 +72,39 @@ BenchmarkEntry PerformanceTest::runSingle(int nodes, double W, unsigned int seed
 
         auto t1 = std::chrono::high_resolution_clock::now();
 
-        entry.parametric_time_ms =
-            std::chrono::duration<double, std::milli>(t1 - t0).count();
-        entry.parametric_result_z = res.maxCapacity;
+        entry.parametric_time_ms     = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        entry.parametric_result_z    = res.maxCapacity;
         entry.parametric_result_cost = res.finalCost;
-
-        // Parametric Search face O(n^2) apeluri la AMCMCPEP in faza II
-        // Estimare: n * (n-1) / 2 comparatii
         entry.parametric_oracle_calls = nodes * (nodes - 1) / 2;
     }
 
-    entry.z_difference = std::abs(
-        entry.amcpebcp_result_z - entry.parametric_result_z
-    );
+    entry.z_difference = std::abs(entry.amcpebcp_result_z - entry.parametric_result_z);
 
     return entry;
 }
 
-// ----------------------------------------------------------------
-// saveToCSV
-// ----------------------------------------------------------------
-void PerformanceTest::saveToCSV(
-    const std::vector<BenchmarkEntry>& results,
-    const std::string& filename)
+void PerformanceTest::saveToCSV(const std::vector<BenchmarkEntry>& results, const std::string& filename)
 {
     std::ofstream f(filename);
 
     f << "nodes,edges,W,"
-        << "amcpebcp_time_ms,amcpebcp_oracle_calls,amcpebcp_z,amcpebcp_cost,"
-        << "parametric_time_ms,parametric_oracle_calls,parametric_z,parametric_cost,"
-        << "z_difference\n";
+      << "amcpebcp_time_ms,amcpebcp_oracle_calls,amcpebcp_z,amcpebcp_cost,"
+      << "parametric_time_ms,parametric_oracle_calls,parametric_z,parametric_cost,"
+      << "z_difference\n";
 
-    for (const auto& e : results)
-    {
-        f << e.nodes << ","
-            << e.edges << ","
-            << e.W << ","
-            << e.amcpebcp_time_ms << ","
-            << e.amcpebcp_oracle_calls << ","
-            << e.amcpebcp_result_z << ","
-            << e.amcpebcp_result_cost << ","
-            << e.parametric_time_ms << ","
-            << e.parametric_oracle_calls << ","
-            << e.parametric_result_z << ","
-            << e.parametric_result_cost << ","
-            << e.z_difference << "\n";
+    for (const auto& e : results) {
+        f << e.nodes                  << ","
+          << e.edges                  << ","
+          << e.W                      << ","
+          << e.amcpebcp_time_ms       << ","
+          << e.amcpebcp_oracle_calls  << ","
+          << e.amcpebcp_result_z      << ","
+          << e.amcpebcp_result_cost   << ","
+          << e.parametric_time_ms     << ","
+          << e.parametric_oracle_calls<< ","
+          << e.parametric_result_z    << ","
+          << e.parametric_result_cost << ","
+          << e.z_difference           << "\n";
     }
 }
+

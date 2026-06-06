@@ -3,21 +3,35 @@
 #include <limits>
 #include <cmath>
 
-AMCPEBCP_Result AMCPEBCP::solve(const Graph& G, double W, double epsilon)
+
+AMCPEBCP_Result AMCPEBCP::solve(const Graph& G, double W)
 {
     int zmin = (int)G.findMCP(false);
     int zmax = (int)G.findMCP(true);
 
-    if (zmin < 0 || zmax < 0) return { 0, 0.0, {} };
-    if (zmin >= zmax)          return { zmin, 0.0, {} };
+
+    if (zmax < 0) return { 0.0, 0.0, {} };
+
+
+    if (zmin < 0) zmin = 0;
+
+
+    if (zmin >= zmax) {
+        auto [cap, path] = G.findMCPWithPath(false);
+        if (!path.empty())
+            return { (double)zmin, 0.0, path };
+
+
+        return { (double)zmax, 0.0, G.findMCPWithPath(true).second };
+    }
 
     AMCMCPEP solver;
 
     AMCMCPEP_Result resMax = solver.solve(G, zmax);
     if (resMax.isFeasible && resMax.totalCost <= W)
-        return { zmax, resMax.totalCost, resMax.path };
+        return { (double)zmax, resMax.totalCost, resMax.path };
 
-    int              bestZ = zmin;
+    double           bestZ = (double)zmin;
     double           bestCost = 0.0;
     std::vector<int> bestPath;
 

@@ -162,3 +162,4 @@ Graph loadGraphFromCSV(const std::string& filename, CostModel costModel)
 
     return graph;
 }
+

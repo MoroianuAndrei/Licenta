@@ -11,11 +11,18 @@ struct ParametricResult {
 };
 
 class ParametricSearch {
+public:
+    ParametricResult solve(const Graph& G, double W);
+
 private:
     AMCMCPEP oracle;
 
     std::vector<double> buildSortedCriticalValues(const Graph& G, double zmax);
 
-public:
-    ParametricResult solve(const Graph& G, double W);
+
+    std::pair<double, double> phaseI(const Graph& G, double zmin, double zmax, double W);
+
+
+    ParametricResult phaseII(const Graph& G, double zk, double zk1, double W);
 };
+

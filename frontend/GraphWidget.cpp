@@ -27,8 +27,8 @@
 
 namespace
 {
-    constexpr double kBaseNodeRadius = 22.0;   // visual px
-    constexpr double kBaseArrowSize = 13.0;    // visual px
+    constexpr double kBaseNodeRadius = 22.0;
+    constexpr double kBaseArrowSize  = 13.0;
     constexpr double kPi = 3.14159265358979323846;
 
     bool sameEdge(const VisualEdge& a, const VisualEdge& b)
@@ -44,7 +44,6 @@ namespace
             std::cos(angle - kPi / 6.0) * size,
             std::sin(angle - kPi / 6.0) * size
         );
-
         const QPointF p2 = end - QPointF(
             std::cos(angle + kPi / 6.0) * size,
             std::sin(angle + kPi / 6.0) * size
@@ -76,27 +75,22 @@ namespace
             if (event->modifiers() & Qt::ControlModifier) {
                 const double zoomFactor = event->angleDelta().y() > 0 ? 1.15 : 1.0 / 1.15;
                 scale(zoomFactor, zoomFactor);
-
-                if (owner_)
-                    owner_->refreshViewportItems();
-
+                if (owner_) owner_->refreshViewportItems();
                 event->accept();
                 return;
             }
-
             QGraphicsView::wheelEvent(event);
         }
 
         void mousePressEvent(QMouseEvent* event) override
         {
             if (event->button() == Qt::MiddleButton) {
-                isPanning_ = true;
+                isPanning_    = true;
                 lastPanPoint_ = event->pos();
                 setCursor(Qt::ClosedHandCursor);
                 event->accept();
                 return;
             }
-
             QGraphicsView::mousePressEvent(event);
         }
 
@@ -105,14 +99,11 @@ namespace
             if (isPanning_) {
                 const QPoint delta = event->pos() - lastPanPoint_;
                 lastPanPoint_ = event->pos();
-
                 horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
                 verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
-
                 event->accept();
                 return;
             }
-
             QGraphicsView::mouseMoveEvent(event);
         }
 
@@ -124,14 +115,13 @@ namespace
                 event->accept();
                 return;
             }
-
             QGraphicsView::mouseReleaseEvent(event);
         }
 
     private:
-        GraphWidget* owner_ = nullptr;
-        bool isPanning_ = false;
-        QPoint lastPanPoint_;
+        GraphWidget* owner_       = nullptr;
+        bool         isPanning_   = false;
+        QPoint       lastPanPoint_;
     };
 
     class EdgeItem final : public QGraphicsPathItem
@@ -150,15 +140,15 @@ namespace
         void mousePressEvent(QGraphicsSceneMouseEvent* event) override
         {
             Q_UNUSED(event);
-            if (owner_)
-                owner_->selectEdge(edge_);
+            if (owner_) owner_->selectEdge(edge_);
         }
 
     private:
         GraphWidget* owner_ = nullptr;
-        VisualEdge edge_;
+        VisualEdge   edge_;
     };
 }
+
 
 GraphWidget::GraphWidget(QWidget* parent)
     : QWidget(parent)
@@ -166,7 +156,7 @@ GraphWidget::GraphWidget(QWidget* parent)
     setObjectName("Panel");
 
     scene_ = new QGraphicsScene(this);
-    view_ = new ZoomableGraphicsView(scene_, this, this);
+    view_  = new ZoomableGraphicsView(scene_, this, this);
     view_->setRenderHint(QPainter::Antialiasing);
     view_->setBackgroundBrush(QBrush(QColor(8, 13, 30)));
     view_->setFrameShape(QFrame::NoFrame);
@@ -192,10 +182,8 @@ void GraphWidget::setViewState(const AlgorithmViewState& state)
     redraw();
 }
 
-void GraphWidget::clearSelection()
-{
-    selectedEdge_.reset();
-}
+void GraphWidget::clearSelection()      { selectedEdge_.reset(); }
+void GraphWidget::refreshViewportItems() { redraw(); }
 
 void GraphWidget::selectEdge(const VisualEdge& edge)
 {
@@ -210,43 +198,15 @@ void GraphWidget::setLargeGraphMode(bool enabled)
     redraw();
 }
 
-QString GraphWidget::formatNumber(double value) const
-{
-    if (std::abs(value - std::round(value)) < 1e-6)
-        return QString::number(static_cast<int>(std::round(value)));
-
-    return QString::number(value, 'f', 2);
-}
-
 double GraphWidget::currentViewScale() const
 {
-    if (!view_)
-        return 1.0;
-
-    const double scale = std::abs(view_->transform().m11());
-    return std::max(0.001, scale);
+    if (!view_) return 1.0;
+    return std::max(0.001, std::abs(view_->transform().m11()));
 }
 
-void GraphWidget::refreshViewportItems()
+
+void GraphWidget::handleSpecialModes()
 {
-    redraw();
-}
-
-void GraphWidget::redraw()
-{
-    scene_->clear();
-
-    if (edges_.empty()) {
-        scene_->setSceneRect(0, 0, 720, 440);
-
-        if (autoFitPending_) {
-            view_->resetTransform();
-            view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
-            autoFitPending_ = false;
-        }
-        return;
-    }
-
     if (largeGraphMode_) {
         auto* text = scene_->addText(
             "Large graph loaded.\n"
@@ -257,28 +217,24 @@ void GraphWidget::redraw()
         text->setFont(QFont("Segoe UI", 14, QFont::Bold));
         text->setTextWidth(520);
         text->setPos(80, 80);
-
-        scene_->setSceneRect(0, 0, 720, 440);
-
-        if (autoFitPending_) {
-            view_->resetTransform();
-            view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
-            autoFitPending_ = false;
-        }
-        return;
     }
 
-    std::set<int> nodes;
-    for (const auto& e : edges_) {
-        nodes.insert(e.from);
-        nodes.insert(e.to);
-    }
+    scene_->setSceneRect(0, 0, 720, 440);
 
+    if (autoFitPending_) {
+        view_->resetTransform();
+        view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
+        autoFitPending_ = false;
+    }
+}
+
+std::map<int, QPointF> GraphWidget::computeCircularLayout(const std::set<int>& nodes) const
+{
     std::map<int, QPointF> pos;
     const QPointF center(390.0, 260.0);
-    const double radius = std::max(210.0, nodes.size() * 6.0);
+    const double  radius = std::max(210.0, nodes.size() * 6.0);
+    const int     n      = std::max(1, static_cast<int>(nodes.size()));
     int index = 0;
-    const int n = std::max(1, static_cast<int>(nodes.size()));
 
     for (int node : nodes) {
         const double angle = -kPi / 2.0 + 2.0 * kPi * index / n;
@@ -289,56 +245,45 @@ void GraphWidget::redraw()
         ++index;
     }
 
-    QRectF layoutRect;
-    for (const auto& item : pos) {
-        if (layoutRect.isNull())
-            layoutRect = QRectF(item.second, QSizeF(1, 1));
-        else
-            layoutRect = layoutRect.united(QRectF(item.second, QSizeF(1, 1)));
-    }
+    return pos;
+}
 
-    scene_->setSceneRect(layoutRect.adjusted(-120, -120, 120, 120));
 
-    if (autoFitPending_) {
-        view_->resetTransform();
-        view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
-        autoFitPending_ = false;
-    }
-
-    const double scale = currentViewScale();
-    const double invScale = 1.0 / scale;
-
-    const double nodeRadius = kBaseNodeRadius * invScale;
-    const double arrowSize = kBaseArrowSize * invScale;
+void GraphWidget::drawEdges(const std::map<int, QPointF>& pos, double invScale)
+{
+    const double arrowSize      = kBaseArrowSize * invScale;
+    const double nodeRadius     = kBaseNodeRadius * invScale;
     const double clickableWidth = 18.0 * invScale;
 
+    std::set<std::pair<int,int>> allEdgePairs;
+    for (const auto& e : edges_)
+        allEdgePairs.insert({e.from, e.to});
+
+    auto isBidirectional = [&](int from, int to) {
+        return allEdgePairs.count({to, from}) > 0;
+    };
+
     for (const auto& edge : edges_) {
-        const bool used = state_.hasResult && edgeIsInPath(edge, state_.path);
+        const bool used        = state_.hasResult && edgeIsInPath(edge, state_.path);
         const bool unavailable = state_.hasResult && !used && edge.maxCapacity + 1e-9 < state_.resultZ;
-        if (unavailable)
-            continue;
+        if (unavailable) continue;
 
         const bool selected = selectedEdge_ && sameEdge(edge, *selectedEdge_);
 
-        const QPointF a = pos[edge.from];
-        const QPointF b = pos[edge.to];
+        const QPointF a = pos.at(edge.from);
+        const QPointF b = pos.at(edge.to);
         QPointF dir = b - a;
         const double len = std::hypot(dir.x(), dir.y());
-        if (len <= 1e-9)
-            continue;
+        if (len <= 1e-9) continue;
         dir /= len;
 
-        const QPointF start = a + dir * nodeRadius;
-        const QPointF end = b - dir * nodeRadius;
-
-        QColor color = edge.isNew ? QColor(145, 135, 160) : QColor(122, 137, 158);
+        QColor color       = edge.isNew ? QColor(145, 135, 160) : QColor(122, 137, 158);
         double visualWidth = 2.2;
 
         if (used) {
-            color = edge.isNew ? QColor(38, 225, 128) : QColor(25, 150, 255);
+            color       = edge.isNew ? QColor(38, 225, 128) : QColor(25, 150, 255);
             visualWidth = 4.0;
         }
-
         if (selected) {
             color = used
                 ? (edge.isNew ? QColor(96, 255, 168) : QColor(90, 190, 255))
@@ -346,16 +291,46 @@ void GraphWidget::redraw()
             visualWidth += 3.0;
         }
 
-        QPen pen(color, visualWidth * invScale, edge.isNew ? Qt::DashLine : Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+        QPen pen(color, visualWidth * invScale,
+                 edge.isNew ? Qt::DashLine : Qt::SolidLine,
+                 Qt::RoundCap, Qt::RoundJoin);
 
         QPainterPath path;
-        path.moveTo(start);
-        path.lineTo(end);
+        QPointF arrowTip, arrowFrom;
+
+        if (isBidirectional(edge.from, edge.to) && edge.from > edge.to) {
+            const QPointF mid    = (a + b) / 2.0;
+            const QPointF perp(-dir.y(), dir.x());
+            const double  offset = std::max(28.0 * invScale, len * 0.22);
+            const QPointF ctrl   = mid + perp * offset;
+
+            QPointF sDir = ctrl - a;
+            const double sLen = std::hypot(sDir.x(), sDir.y());
+            if (sLen > 1e-9) sDir /= sLen;
+            const QPointF curveStart = a + sDir * nodeRadius;
+
+            QPointF eDir = b - ctrl;
+            const double eLen2 = std::hypot(eDir.x(), eDir.y());
+            if (eLen2 > 1e-9) eDir /= eLen2;
+            const QPointF curveEnd = b - eDir * nodeRadius;
+
+            path.moveTo(curveStart);
+            path.quadTo(ctrl, curveEnd);
+            arrowTip  = curveEnd;
+            arrowFrom = ctrl;
+        } else {
+            const QPointF start = a + dir * nodeRadius;
+            const QPointF end   = b - dir * nodeRadius;
+            path.moveTo(start);
+            path.lineTo(end);
+            arrowTip  = end;
+            arrowFrom = start;
+        }
 
         auto* line = scene_->addPath(path, pen);
         line->setZValue(selected ? 4 : 1);
 
-        auto* arrow = scene_->addPath(makeArrowHead(start, end, arrowSize), pen, QBrush(color));
+        auto* arrow = scene_->addPath(makeArrowHead(arrowFrom, arrowTip, arrowSize), pen, QBrush(color));
         arrow->setZValue(selected ? 5 : 2);
 
         QPainterPathStroker stroker;
@@ -365,20 +340,19 @@ void GraphWidget::redraw()
         clickable->setBrush(Qt::NoBrush);
         scene_->addItem(clickable);
     }
+}
 
-    const bool showNodeLabels = nodes.size() <= 200;
+
+void GraphWidget::drawNodes(const std::map<int, QPointF>& pos, const std::set<int>& nodes)
+{
+    const bool showLabels = nodes.size() <= 200;
 
     for (int node : nodes) {
-        const QPointF p = pos[node];
+        const QPointF p = pos.at(node);
 
-        // The node item ignores the view transformation, so it keeps the same
-        // visual size while zooming. Its local coordinate system is centered
-        // in (0, 0), and the item is positioned at the logical node position.
         auto* circle = scene_->addEllipse(
-            -kBaseNodeRadius,
-            -kBaseNodeRadius,
-            kBaseNodeRadius * 2.0,
-            kBaseNodeRadius * 2.0,
+            -kBaseNodeRadius, -kBaseNodeRadius,
+             kBaseNodeRadius * 2.0, kBaseNodeRadius * 2.0,
             QPen(QColor(110, 190, 255), 2.0),
             QBrush(QColor(22, 63, 108))
         );
@@ -386,15 +360,52 @@ void GraphWidget::redraw()
         circle->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
         circle->setZValue(10);
 
-        if (showNodeLabels) {
+        if (showLabels) {
             auto* text = new QGraphicsSimpleTextItem(QString::number(node), circle);
             text->setBrush(QBrush(Qt::white));
             text->setFont(QFont("Segoe UI", 11, QFont::Bold));
-
             const QRectF br = text->boundingRect();
             text->setPos(-br.width() / 2.0, -br.height() / 2.0);
             text->setZValue(11);
         }
     }
-
 }
+
+
+void GraphWidget::redraw()
+{
+    scene_->clear();
+
+    if (edges_.empty() || largeGraphMode_) {
+        handleSpecialModes();
+        return;
+    }
+
+    std::set<int> nodes;
+    for (const auto& e : edges_) {
+        nodes.insert(e.from);
+        nodes.insert(e.to);
+    }
+
+    const auto pos = computeCircularLayout(nodes);
+
+    QRectF layoutRect;
+    for (const auto& [node, p] : pos) {
+        if (layoutRect.isNull())
+            layoutRect = QRectF(p, QSizeF(1, 1));
+        else
+            layoutRect = layoutRect.united(QRectF(p, QSizeF(1, 1)));
+    }
+    scene_->setSceneRect(layoutRect.adjusted(-120, -120, 120, 120));
+
+    if (autoFitPending_) {
+        view_->resetTransform();
+        view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
+        autoFitPending_ = false;
+    }
+
+    const double invScale = 1.0 / currentViewScale();
+    drawEdges(pos, invScale);
+    drawNodes(pos, nodes);
+}
+

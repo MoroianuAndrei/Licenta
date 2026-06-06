@@ -21,11 +21,11 @@ public slots:
 
 private:
     void render();
-    QString formatNumber(double value) const;
     QString costDetails(const VisualEdge& edge) const;
 
-    QLabel* title_ = nullptr;
+    QLabel* title_   = nullptr;
     QLabel* content_ = nullptr;
     AlgorithmViewState state_;
     std::optional<VisualEdge> selectedEdge_;
 };
+

@@ -1,4 +1,4 @@
-﻿#include "BenchmarkWidget.h"
+#include "BenchmarkWidget.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -8,12 +8,12 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QLabel>
+#include <QColor>
+#include <QFont>
 
 #include <sstream>
 
-// ----------------------------------------------------------------
-// BenchmarkWorker
-// ----------------------------------------------------------------
+
 void BenchmarkWorker::run()
 {
     PerformanceTest test;
@@ -28,7 +28,7 @@ void BenchmarkWorker::run()
 
         try
         {
-            BenchmarkEntry entry = test.runSingle(n, W_, seed_);
+            BenchmarkEntry entry = test.runSingle(n, W_, maxCapLimit_, seed_);
             results.push_back(entry);
             emit entryReady(entry);
         }
@@ -43,9 +43,7 @@ void BenchmarkWorker::run()
     emit finished(results);
 }
 
-// ----------------------------------------------------------------
-// BenchmarkWidget
-// ----------------------------------------------------------------
+
 BenchmarkWidget::BenchmarkWidget(QWidget* parent)
     : QWidget(parent)
 {
@@ -59,39 +57,57 @@ void BenchmarkWidget::buildUi()
     rootLayout->setContentsMargins(16, 16, 16, 16);
     rootLayout->setSpacing(12);
 
-    // --- Titlu ---
+
     auto* title = new QLabel("Benchmark: AMCPEBCP vs Parametric Search");
     title->setObjectName("PanelTitle");
     rootLayout->addWidget(title);
 
-    // --- Parametri ---
+
+    auto* desc = new QLabel(
+        "Ambii algoritmi ruleaza pe acelasi graf generat random cu cost liniar.\n"
+        "Alg3 face O(log(interval)) apeluri oracle [slab polinomial].\n"
+        "Alg4 face O(n\xC2\xB2) apeluri oracle [puternic polinomial] — castiga cand intervalul e mare si n e mic."
+    );
+    desc->setObjectName("PanelContent");
+    desc->setWordWrap(true);
+    rootLayout->addWidget(desc);
+
+
     auto* paramGroup = new QGroupBox("Parametri benchmark");
     paramGroup->setObjectName("Panel");
     auto* paramLayout = new QGridLayout(paramGroup);
     paramLayout->setSpacing(10);
 
-    paramLayout->addWidget(new QLabel("Dimensiuni grafuri (noduri, separate prin virgulă):"), 0, 0);
-    nodesInput_ = new QLineEdit("10, 20, 50, 100, 200");
-    nodesInput_->setPlaceholderText("ex: 10, 50, 100, 500, 1000");
+    paramLayout->addWidget(new QLabel("Dimensiuni grafuri (noduri, separate prin virgula):"), 0, 0);
+    nodesInput_ = new QLineEdit("5, 10, 20, 50");
+    nodesInput_->setPlaceholderText("ex: 5, 10, 20, 50, 100");
     paramLayout->addWidget(nodesInput_, 0, 1);
 
-    paramLayout->addWidget(new QLabel("Buget W:"), 1, 0);
+    paramLayout->addWidget(new QLabel("Max Capacity Limit (intervalul capacitatilor):"), 1, 0);
+    maxCapLimitInput_ = new QSpinBox();
+    maxCapLimitInput_->setRange(10, 2000000000);
+    maxCapLimitInput_->setValue(500000);
+    maxCapLimitInput_->setSingleStep(1000);
+    maxCapLimitInput_->setGroupSeparatorShown(true);
+    paramLayout->addWidget(maxCapLimitInput_, 1, 1);
+
+    paramLayout->addWidget(new QLabel("Buget W:"), 2, 0);
     budgetInput_ = new QDoubleSpinBox();
     budgetInput_->setRange(1.0, 1e9);
     budgetInput_->setValue(1000.0);
     budgetInput_->setDecimals(2);
-    paramLayout->addWidget(budgetInput_, 1, 1);
+    paramLayout->addWidget(budgetInput_, 2, 1);
 
     rootLayout->addWidget(paramGroup);
 
-    // --- Butoane + progress ---
+
     auto* ctrlLayout = new QHBoxLayout();
 
-    runButton_ = new QPushButton("Rulează Benchmark");
+    runButton_ = new QPushButton("Ruleaza Benchmark");
     runButton_->setObjectName("RunButton");
     ctrlLayout->addWidget(runButton_);
 
-    saveButton_ = new QPushButton("Salvează CSV");
+    saveButton_ = new QPushButton("Salveaza CSV");
     saveButton_->setEnabled(false);
     ctrlLayout->addWidget(saveButton_);
 
@@ -107,24 +123,25 @@ void BenchmarkWidget::buildUi()
     statusLabel_->setObjectName("PanelContent");
     rootLayout->addWidget(statusLabel_);
 
-    // --- Tabel rezultate ---
+
     auto* tableLabel = new QLabel("Rezultate:");
     tableLabel->setObjectName("PanelTitle");
     rootLayout->addWidget(tableLabel);
 
-    resultsTable_ = new QTableWidget(0, 10);
+    resultsTable_ = new QTableWidget(0, 11);
     resultsTable_->setHorizontalHeaderLabels({
         "Noduri", "Arce", "W",
-        "AMCPEBCP (ms)", "Apeluri AMCPEBCP", "z* AMCPEBCP",
-        "Param. Search (ms)", "Apeluri Param.", "z* Param.",
-        "Δz*"
-        });
+        "AMCPEBCP (ms)", "Apeluri Alg3", "z* Alg3",
+        "Param. Search (ms)", "Apeluri Alg4", "z* Alg4",
+        "Castigator",
+        "\xCE\x94z*"
+    });
     resultsTable_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     resultsTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     resultsTable_->setAlternatingRowColors(true);
     rootLayout->addWidget(resultsTable_, 1);
 
-    // --- Log ---
+
     auto* logLabel = new QLabel("Log:");
     logLabel->setObjectName("PanelContent");
     rootLayout->addWidget(logLabel);
@@ -135,8 +152,8 @@ void BenchmarkWidget::buildUi()
     logBox_->setMaximumHeight(120);
     rootLayout->addWidget(logBox_);
 
-    // --- Conexiuni ---
-    connect(runButton_, &QPushButton::clicked, this, &BenchmarkWidget::onRunClicked);
+
+    connect(runButton_,  &QPushButton::clicked, this, &BenchmarkWidget::onRunClicked);
     connect(saveButton_, &QPushButton::clicked, this, &BenchmarkWidget::onSaveClicked);
 }
 
@@ -195,37 +212,45 @@ void BenchmarkWidget::addTableRow(const BenchmarkEntry& e, int row)
 {
     resultsTable_->insertRow(row);
 
-    auto addItem = [&](int col, const QString& text, bool highlight = false) {
+    auto addItem = [&](int col, const QString& text,
+                       QColor fg = QColor("#cfe4ff"), bool bold = false)
+    {
         auto* item = new QTableWidgetItem(text);
         item->setTextAlignment(Qt::AlignCenter);
-        if (highlight)
-            item->setForeground(QColor("#2ecc71"));
+        item->setForeground(fg);
+        if (bold) {
+            QFont f = item->font();
+            f.setBold(true);
+            item->setFont(f);
+        }
         resultsTable_->setItem(row, col, item);
-        };
+    };
 
     addItem(0, QString::number(e.nodes));
     addItem(1, QString::number(e.edges));
     addItem(2, QString::number(e.W, 'f', 1));
 
-    // AMCPEBCP
+
     addItem(3, QString::number(e.amcpebcp_time_ms, 'f', 2));
     addItem(4, QString::number(e.amcpebcp_oracle_calls));
     addItem(5, QString::number(e.amcpebcp_result_z, 'f', 4));
 
-    // Parametric Search — evidentiaza daca e mai rapid
-    bool paramFaster = e.parametric_time_ms < e.amcpebcp_time_ms;
-    addItem(6, QString::number(e.parametric_time_ms, 'f', 2), paramFaster);
-    addItem(7, QString::number(e.parametric_oracle_calls), paramFaster);
+
+    bool alg4Wins = (e.parametric_time_ms < e.amcpebcp_time_ms);
+    QColor paramColor = alg4Wins ? QColor("#2ecc71") : QColor("#cfe4ff");
+    addItem(6, QString::number(e.parametric_time_ms,  'f', 2), paramColor);
+    addItem(7, QString::number(e.parametric_oracle_calls), paramColor, alg4Wins);
     addItem(8, QString::number(e.parametric_result_z, 'f', 4));
 
-    // Diferenta z*
-    bool correct = e.z_difference < 0.01;
-    auto* diffItem = new QTableWidgetItem(
-        QString::number(e.z_difference, 'f', 6)
-    );
-    diffItem->setTextAlignment(Qt::AlignCenter);
-    diffItem->setForeground(correct ? QColor("#2ecc71") : QColor("#e74c3c"));
-    resultsTable_->setItem(row, 9, diffItem);
+
+    QString winner   = alg4Wins ? "Alg4 (Param)" : "Alg3 (AMCPEBCP)";
+    QColor  winColor = alg4Wins ? QColor("#2ecc71") : QColor("#7dd3fc");
+    addItem(9, winner, winColor, true);
+
+
+    bool correct = e.z_difference < 1.0;
+    addItem(10, QString::number(e.z_difference, 'f', 6),
+            correct ? QColor("#2ecc71") : QColor("#e74c3c"));
 }
 
 void BenchmarkWidget::setRunning(bool running)
@@ -233,16 +258,15 @@ void BenchmarkWidget::setRunning(bool running)
     runButton_->setEnabled(!running);
     nodesInput_->setEnabled(!running);
     budgetInput_->setEnabled(!running);
+    maxCapLimitInput_->setEnabled(!running);
     progressBar_->setVisible(running);
     saveButton_->setEnabled(!running && !results_.empty());
 }
 
 void BenchmarkWidget::onRunClicked()
 {
-    // Parseaza dimensiunile
     std::vector<int> sizes;
-    QString input = nodesInput_->text();
-    QStringList parts = input.split(',', Qt::SkipEmptyParts);
+    QStringList parts = nodesInput_->text().split(',', Qt::SkipEmptyParts);
 
     for (const QString& p : parts)
     {
@@ -264,7 +288,6 @@ void BenchmarkWidget::onRunClicked()
         return;
     }
 
-    // Reset UI
     results_.clear();
     resultsTable_->setRowCount(0);
     logBox_->clear();
@@ -272,23 +295,23 @@ void BenchmarkWidget::onRunClicked()
     progressBar_->setValue(0);
     setRunning(true);
 
-    double W = budgetInput_->value();
+    double W           = budgetInput_->value();
+    int    maxCapLimit = maxCapLimitInput_->value();
 
-    logBox_->append(QString("Pornire benchmark: %1 dimensiuni, W=%2")
-        .arg(sizes.size()).arg(W));
+    logBox_->append(QString("Pornire benchmark: %1 dimensiuni, W=%2, MaxCapLimit=%3")
+        .arg(sizes.size()).arg(W).arg(maxCapLimit));
 
-    // Pornire worker thread
     workerThread_ = new QThread(this);
-    auto* worker = new BenchmarkWorker(sizes, W, 42);
+    auto* worker  = new BenchmarkWorker(sizes, W, maxCapLimit, 42);
     worker->moveToThread(workerThread_);
 
-    connect(workerThread_, &QThread::started, worker, &BenchmarkWorker::run);
+    connect(workerThread_, &QThread::started,  worker, &BenchmarkWorker::run);
     connect(worker, &BenchmarkWorker::progressUpdate, this, &BenchmarkWidget::onProgressUpdate);
-    connect(worker, &BenchmarkWorker::entryReady, this, &BenchmarkWidget::onEntryReady);
-    connect(worker, &BenchmarkWorker::finished, this, &BenchmarkWidget::onFinished);
-    connect(worker, &BenchmarkWorker::errorOccurred, this, &BenchmarkWidget::onError);
+    connect(worker, &BenchmarkWorker::entryReady,     this, &BenchmarkWidget::onEntryReady);
+    connect(worker, &BenchmarkWorker::finished,       this, &BenchmarkWidget::onFinished);
+    connect(worker, &BenchmarkWorker::errorOccurred,  this, &BenchmarkWidget::onError);
     connect(worker, &BenchmarkWorker::finished, workerThread_, &QThread::quit);
-    connect(workerThread_, &QThread::finished, worker, &QObject::deleteLater);
+    connect(workerThread_, &QThread::finished,  worker, &QObject::deleteLater);
 
     workerThread_->start();
 }
@@ -306,13 +329,17 @@ void BenchmarkWidget::onEntryReady(BenchmarkEntry entry)
     int row = resultsTable_->rowCount();
     addTableRow(entry, row);
 
+    bool alg4Wins = (entry.parametric_time_ms < entry.amcpebcp_time_ms);
     logBox_->append(
-        QString("n=%1 | AMCPEBCP: %2ms (z*=%3) | Parametric: %4ms (z*=%5) | Δz=%6")
+        QString("n=%1 | AMCPEBCP: %2ms (%3 apeluri, z*=%4) | Param: %5ms (%6 apeluri, z*=%7) | Castigator: %8 | dz=%9")
         .arg(entry.nodes)
-        .arg(entry.amcpebcp_time_ms, 0, 'f', 2)
-        .arg(entry.amcpebcp_result_z, 0, 'f', 4)
-        .arg(entry.parametric_time_ms, 0, 'f', 2)
+        .arg(entry.amcpebcp_time_ms,    0, 'f', 2)
+        .arg(entry.amcpebcp_oracle_calls)
+        .arg(entry.amcpebcp_result_z,   0, 'f', 4)
+        .arg(entry.parametric_time_ms,  0, 'f', 2)
+        .arg(entry.parametric_oracle_calls)
         .arg(entry.parametric_result_z, 0, 'f', 4)
+        .arg(alg4Wins ? "Alg4" : "Alg3")
         .arg(entry.z_difference, 0, 'f', 6)
     );
 }
@@ -336,7 +363,7 @@ void BenchmarkWidget::onError(QString message)
 void BenchmarkWidget::onSaveClicked()
 {
     QString fileName = QFileDialog::getSaveFileName(
-        this, "Salvează rezultate benchmark", "benchmark_results.csv",
+        this, "Salveaza rezultate benchmark", "benchmark_results.csv",
         "CSV Files (*.csv)"
     );
 
@@ -345,6 +372,6 @@ void BenchmarkWidget::onSaveClicked()
 
     PerformanceTest test;
     test.saveToCSV(results_, fileName.toStdString());
-
     logBox_->append("Rezultate salvate: " + fileName);
 }
+

@@ -27,6 +27,8 @@ WIN32 MACOSX_BUNDLE
     frontend/GenerateGraphWidget.cpp
     frontend/BenchmarkWidget.h
     frontend/BenchmarkWidget.cpp
+    frontend/TestWidget.h
+    frontend/TestWidget.cpp
 
     backend/core/node.h
     backend/core/node.cpp

@@ -1,9 +1,9 @@
 #include "ResultWidget.h"
+#include "UiModels.h"
 
 #include <QGridLayout>
 #include <QLabel>
 #include <QTextEdit>
-#include <cmath>
 
 ResultWidget::ResultWidget(QWidget* parent)
     : QWidget(parent)
@@ -15,8 +15,8 @@ ResultWidget::ResultWidget(QWidget* parent)
     title->setObjectName("PanelTitle");
 
     statusLabel_ = new QLabel("Status: asteapta rulare", this);
-    pathLabel_ = new QLabel("Ruta optima: -", this);
-    costLabel_ = new QLabel("Cost final: -", this);
+    pathLabel_   = new QLabel("Ruta optima: -", this);
+    costLabel_   = new QLabel("Cost final: -", this);
 
     for (auto* label : {statusLabel_, pathLabel_, costLabel_}) {
         label->setObjectName("PanelContent");
@@ -32,11 +32,11 @@ ResultWidget::ResultWidget(QWidget* parent)
     layout->setContentsMargins(16, 16, 16, 16);
     layout->setHorizontalSpacing(18);
     layout->setVerticalSpacing(8);
-    layout->addWidget(title, 0, 0, 1, 2);
-    layout->addWidget(pathLabel_, 1, 0);
-    layout->addWidget(costLabel_, 2, 0);
-    layout->addWidget(statusLabel_, 3, 0);
-    layout->addWidget(log_, 1, 1, 3, 1);
+    layout->addWidget(title,       0, 0, 1, 2);
+    layout->addWidget(pathLabel_,  1, 0);
+    layout->addWidget(costLabel_,  2, 0);
+    layout->addWidget(statusLabel_,3, 0);
+    layout->addWidget(log_,        1, 1, 3, 1);
     layout->setColumnStretch(0, 1);
     layout->setColumnStretch(1, 1);
 }
@@ -48,13 +48,15 @@ void ResultWidget::clearResult()
     costLabel_->setText("Cost final: -");
 }
 
-void ResultWidget::setResult(const QString& algorithm, const std::vector<int>& path, double zValue, double finalCost, bool feasible)
+void ResultWidget::setResult(const QString& algorithm, const std::vector<int>& path,
+                             double zValue, double finalCost, bool feasible)
 {
     Q_UNUSED(algorithm);
     pathLabel_->setText("Ruta optima: " + formatPath(path));
     costLabel_->setText(QString("z*: %1   |   Cost final: %2")
         .arg(formatNumber(zValue), formatNumber(finalCost)));
-    statusLabel_->setText(feasible ? "Status: solutie gasita" : "Status: problema infezabila / fara drum");
+    statusLabel_->setText(feasible ? "Status: solutie gasita"
+                                   : "Status: problema infezabila / fara drum");
 }
 
 void ResultWidget::appendLog(const QString& text)
@@ -63,23 +65,3 @@ void ResultWidget::appendLog(const QString& text)
     log_->ensureCursorVisible();
 }
 
-QString ResultWidget::formatPath(const std::vector<int>& path) const
-{
-    if (path.empty())
-        return "(fara drum)";
-
-    QString result;
-    for (size_t i = 0; i < path.size(); ++i) {
-        result += QString::number(path[i]);
-        if (i + 1 < path.size())
-            result += " -> ";
-    }
-    return result;
-}
-
-QString ResultWidget::formatNumber(double value) const
-{
-    if (std::abs(value - std::round(value)) < 1e-6)
-        return QString::number((int)std::round(value));
-    return QString::number(value, 'f', 2);
-}

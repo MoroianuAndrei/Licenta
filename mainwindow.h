@@ -11,6 +11,7 @@
 #include "backend/core/graph.h"
 #include "frontend/UiModels.h"
 #include "frontend/BenchmarkWidget.h"
+#include "frontend/TestWidget.h"
 
 class ControlPanelWidget;
 class EdgeDetailsWidget;
@@ -45,21 +46,25 @@ private:
 
     void loadGraphFromFile(const QString& fileName);
 
+    void runAMCMCPEP(double z);
+    void runAMCPEBCP(double W);
+    void runParametricSearch(double W);
+
     QString defaultDataPath() const;
-    QString formatPath(const std::vector<int>& path) const;
     std::vector<VisualEdge> loadVisualEdgesFromCSV(const QString& fileName) const;
 
     SidebarWidget* sidebar_ = nullptr;
 
-    QStackedWidget* stackedWidget_ = nullptr;
-    QWidget* loadRunPage_ = nullptr;
+    QStackedWidget* stackedWidget_       = nullptr;
+    QWidget*        loadRunPage_         = nullptr;
     GenerateGraphWidget* generateGraphWidget_ = nullptr;
-    BenchmarkWidget* benchmarkWidget_ = nullptr;
+    BenchmarkWidget*     benchmarkWidget_     = nullptr;
+    TestWidget*          testWidget_          = nullptr;
 
-    ControlPanelWidget* controls_ = nullptr;
-    GraphWidget* graphWidget_ = nullptr;
-    EdgeDetailsWidget* edgeDetails_ = nullptr;
-    ResultWidget* resultWidget_ = nullptr;
+    ControlPanelWidget* controls_     = nullptr;
+    GraphWidget*        graphWidget_  = nullptr;
+    EdgeDetailsWidget*  edgeDetails_  = nullptr;
+    ResultWidget*       resultWidget_ = nullptr;
 
     std::optional<Graph> currentGraph_;
     QString lastLoadedGraphFileName_;
@@ -68,3 +73,4 @@ private:
 };
 
 #endif
+

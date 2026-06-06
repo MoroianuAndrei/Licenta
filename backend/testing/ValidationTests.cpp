@@ -111,7 +111,8 @@ static void runRandomBruteForceValidation(int testCount)
 
     for (int t = 1; t <= testCount; ++t)
     {
-        int n = 4 + (t % 3); // 4,5,6 noduri
+        int n = 4 + (t % 3);
+
 
         Graph G = generateRandomSmallGraph(n, 0.35, rng);
         double z = chooseRandomZ(G, rng);

@@ -2,6 +2,7 @@
 
 #include <QString>
 #include <vector>
+#include <cmath>
 
 struct VisualEdge
 {
@@ -30,3 +31,25 @@ inline bool edgeIsInPath(const VisualEdge& edge, const std::vector<int>& path)
             return true;
     return false;
 }
+
+inline QString formatNumber(double value)
+{
+    if (std::abs(value - std::round(value)) < 1e-6)
+        return QString::number(static_cast<int>(std::round(value)));
+    return QString::number(value, 'f', 2);
+}
+
+inline QString formatPath(const std::vector<int>& path)
+{
+    if (path.empty())
+        return "(fara drum)";
+
+    QString result;
+    for (size_t i = 0; i < path.size(); ++i) {
+        result += QString::number(path[i]);
+        if (i + 1 < path.size())
+            result += " -> ";
+    }
+    return result;
+}
+

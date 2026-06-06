@@ -27,7 +27,11 @@ private:
     QSpinBox* pathsSpinBox = nullptr;
     QSpinBox* cyclesSpinBox = nullptr;
     QDoubleSpinBox* probabilitySpinBox = nullptr;
+    QSpinBox* minCapacitySpinBox = nullptr;
+    QSpinBox* maxCapacitySpinBox = nullptr;
+    QSpinBox* maxCapacityLimitSpinBox = nullptr;
     QSpinBox* seedSpinBox = nullptr;
     QPushButton* generateButton = nullptr;
     QLabel* statusLabel = nullptr;
 };
+

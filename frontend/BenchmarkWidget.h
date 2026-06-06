@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QDoubleSpinBox>
+#include <QSpinBox>
 #include <QPushButton>
 #include <QTextEdit>
 #include <QTableWidget>
@@ -12,17 +13,14 @@
 #include <vector>
 #include "backend/testing/PerformanceTest.h"
 
-// ----------------------------------------------------------------
-// Worker thread — ruleaza benchmark-ul fara sa blocheze UI-ul
-// ----------------------------------------------------------------
+
 class BenchmarkWorker : public QObject
 {
     Q_OBJECT
 
 public:
-    BenchmarkWorker(std::vector<int> sizes, double W, unsigned int seed)
-        : sizes_(std::move(sizes)), W_(W), seed_(seed) {
-    }
+    BenchmarkWorker(std::vector<int> sizes, double W, int maxCapLimit, unsigned int seed)
+        : sizes_(std::move(sizes)), W_(W), maxCapLimit_(maxCapLimit), seed_(seed) {}
 
 public slots:
     void run();
@@ -36,12 +34,11 @@ signals:
 private:
     std::vector<int> sizes_;
     double           W_;
+    int              maxCapLimit_;
     unsigned int     seed_;
 };
 
-// ----------------------------------------------------------------
-// BenchmarkWidget — panoul principal din UI
-// ----------------------------------------------------------------
+
 class BenchmarkWidget : public QWidget
 {
     Q_OBJECT
@@ -66,21 +63,16 @@ private:
     void addTableRow(const BenchmarkEntry& e, int row);
     void setRunning(bool running);
 
-    // Input
-    QLineEdit* nodesInput_;
+    QLineEdit*      nodesInput_;
     QDoubleSpinBox* budgetInput_;
-
-    // Controls
-    QPushButton* runButton_;
-    QPushButton* saveButton_;
-    QProgressBar* progressBar_;
-    QLabel* statusLabel_;
-
-    // Results
-    QTableWidget* resultsTable_;
-    QTextEdit* logBox_;
-
-    // Data
+    QSpinBox*       maxCapLimitInput_;
+    QPushButton*    runButton_;
+    QPushButton*    saveButton_;
+    QProgressBar*   progressBar_;
+    QLabel*         statusLabel_;
+    QTableWidget*   resultsTable_;
+    QTextEdit*      logBox_;
     std::vector<BenchmarkEntry> results_;
-    QThread* workerThread_ = nullptr;
+    QThread*        workerThread_ = nullptr;
 };
+

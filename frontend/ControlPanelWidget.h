@@ -30,3 +30,4 @@ private:
     QPushButton* loadButton_ = nullptr;
     QPushButton* runButton_ = nullptr;
 };
+

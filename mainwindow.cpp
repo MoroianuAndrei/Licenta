@@ -12,6 +12,7 @@
 #include "frontend/ResultWidget.h"
 #include "frontend/SidebarWidget.h"
 #include "frontend/BenchmarkWidget.h"
+#include "frontend/TestWidget.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -43,17 +44,18 @@ void MainWindow::buildUi()
     auto* central = new QWidget(this);
     setCentralWidget(central);
 
-    sidebar_ = new SidebarWidget(this);
+    sidebar_      = new SidebarWidget(this);
     stackedWidget_ = new QStackedWidget(this);
 
     generateGraphWidget_ = new GenerateGraphWidget(this);
-    benchmarkWidget_ = new BenchmarkWidget(this);
+    benchmarkWidget_     = new BenchmarkWidget(this);
+    testWidget_          = new TestWidget(this);
 
     loadRunPage_ = new QWidget(this);
-    controls_ = new ControlPanelWidget(loadRunPage_);
+    controls_    = new ControlPanelWidget(loadRunPage_);
     graphWidget_ = new GraphWidget(loadRunPage_);
     edgeDetails_ = new EdgeDetailsWidget(loadRunPage_);
-    resultWidget_ = new ResultWidget(loadRunPage_);
+    resultWidget_= new ResultWidget(loadRunPage_);
 
     auto* centerLayout = new QVBoxLayout();
     centerLayout->setContentsMargins(0, 0, 0, 0);
@@ -71,6 +73,7 @@ void MainWindow::buildUi()
     stackedWidget_->addWidget(generateGraphWidget_);
     stackedWidget_->addWidget(loadRunPage_);
     stackedWidget_->addWidget(benchmarkWidget_);
+    stackedWidget_->addWidget(testWidget_);
     stackedWidget_->setCurrentWidget(loadRunPage_);
 
     auto* rootLayout = new QHBoxLayout(central);
@@ -81,15 +84,18 @@ void MainWindow::buildUi()
 
     connect(sidebar_, &SidebarWidget::generateGraphClicked, this, [this]() {
         stackedWidget_->setCurrentWidget(generateGraphWidget_);
-        });
-
+    });
     connect(sidebar_, &SidebarWidget::loadRunClicked, this, [this]() {
         stackedWidget_->setCurrentWidget(loadRunPage_);
-        });
-
+    });
     connect(sidebar_, &SidebarWidget::benchmarkClicked, this, [this]() {
         stackedWidget_->setCurrentWidget(benchmarkWidget_);
-        });
+    });
+    connect(sidebar_, &SidebarWidget::testsClicked, this, [this]() {
+        stackedWidget_->setCurrentWidget(testWidget_);
+    });
+
+    sidebar_->setActiveButton(1);
 
     connect(generateGraphWidget_, &GenerateGraphWidget::graphGenerated,
         this, &MainWindow::onGeneratedGraph);
@@ -137,37 +143,12 @@ void MainWindow::applyStyle()
             );
         }
 
-        #SidebarTitle {
-            color: #ffffff;
-            font-size: 24px;
-            font-weight: 800;
-        }
-
-        #SidebarItem {
-            color: #dbeafe;
-            background-color: rgba(255,255,255,0.06);
-            border-radius: 10px;
-            padding-left: 10px;
-        }
-
-        #SidebarItem:hover {
-            background-color: rgba(125, 211, 252, 0.18);
-        }
-
-        #SidebarFooter {
-            color: #89a7c7;
-            font-size: 11px;
-        }
-
-        #PanelTitle {
-            color: #7dd3fc;
-            font-size: 17px;
-            font-weight: 800;
-        }
-
-        #PanelContent {
-            color: #d9e7ff;
-        }
+        #SidebarTitle    { color: #ffffff; font-size: 24px; font-weight: 800; }
+        #SidebarItem     { color: #dbeafe; background-color: rgba(255,255,255,0.06); border-radius: 10px; padding-left: 10px; }
+        #SidebarItem:hover { background-color: rgba(125, 211, 252, 0.18); }
+        #SidebarFooter   { color: #89a7c7; font-size: 11px; }
+        #PanelTitle      { color: #7dd3fc; font-size: 17px; font-weight: 800; }
+        #PanelContent    { color: #d9e7ff; }
 
         #LogBox, QTextEdit {
             background-color: #060b17;
@@ -194,14 +175,8 @@ void MainWindow::applyStyle()
             font-weight: 600;
         }
 
-        QPushButton:hover {
-            background-color: #1d3a6a;
-            border-color: #64b5ff;
-        }
-
-        QPushButton:pressed {
-            background-color: #0f2a50;
-        }
+        QPushButton:hover   { background-color: #1d3a6a; border-color: #64b5ff; }
+        QPushButton:pressed { background-color: #0f2a50; }
     )");
 }
 
@@ -214,7 +189,6 @@ QString MainWindow::defaultDataPath() const
             dir.cd("data");
             return dir.absolutePath();
         }
-
         if (!dir.cdUp())
             break;
     }
@@ -225,10 +199,8 @@ QString MainWindow::defaultDataPath() const
 std::vector<VisualEdge> MainWindow::loadVisualEdgesFromCSV(const QString& fileName) const
 {
     std::ifstream file(fileName.toStdString());
-
-    if (!file.is_open()) {
+    if (!file.is_open())
         throw std::runtime_error("Nu pot deschide fisierul CSV pentru vizualizare.");
-    }
 
     std::string line;
     std::getline(file, line);
@@ -238,32 +210,27 @@ std::vector<VisualEdge> MainWindow::loadVisualEdgesFromCSV(const QString& fileNa
 
     while (std::getline(file, line)) {
         ++lineNumber;
-
-        if (line.empty())
-            continue;
+        if (line.empty()) continue;
 
         std::stringstream ss(line);
         std::string token;
         std::vector<std::string> values;
-
-        while (std::getline(ss, token, ',')) {
+        while (std::getline(ss, token, ','))
             values.push_back(token);
-        }
 
-        if (values.size() < 6) {
+        if (values.size() < 6)
             throw std::runtime_error(
                 "Linie CSV invalida la linia " + std::to_string(lineNumber) +
                 ". Format asteptat: from,to,capacity,max_capacity,isNew,rate"
             );
-        }
 
         VisualEdge edge;
-        edge.from = std::stoi(values[0]);
-        edge.to = std::stoi(values[1]);
-        edge.capacity = std::stod(values[2]);
+        edge.from        = std::stoi(values[0]);
+        edge.to          = std::stoi(values[1]);
+        edge.capacity    = std::stod(values[2]);
         edge.maxCapacity = std::stod(values[3]);
-        edge.isNew = (std::stoi(values[4]) != 0);
-        edge.rate = std::stod(values[5]);
+        edge.isNew       = (std::stoi(values[4]) != 0);
+        edge.rate        = std::stod(values[5]);
 
         edges.push_back(edge);
     }
@@ -276,33 +243,34 @@ void MainWindow::loadGraphFromFile(const QString& fileName)
     lastLoadedGraphFileName_ = fileName;
 
     currentGraph_ = loadGraphFromCSV(fileName.toStdString(), CostModel::ArticleGeneral);
-    visualEdges_ = loadVisualEdgesFromCSV(fileName);
+    visualEdges_  = loadVisualEdgesFromCSV(fileName);
 
     resetResultState();
     refreshViewState();
 
+    const bool isLarge = (int)visualEdges_.size() > 80;
+    graphWidget_->setLargeGraphMode(isLarge);
     graphWidget_->setEdges(visualEdges_);
 
     resultWidget_->appendLog("Loaded Graph from: " + fileName);
-    resultWidget_->appendLog("Graph loaded successfully.");
+    resultWidget_->appendLog(
+        QString("Graph loaded: %1 edges%2.")
+            .arg(visualEdges_.size())
+            .arg(isLarge ? " (large graph mode)" : "")
+    );
     logSeparator();
 }
 
 void MainWindow::resetResultState()
 {
     viewState_.hasResult = false;
-    viewState_.resultZ = 0.0;
+    viewState_.resultZ   = 0.0;
     viewState_.finalCost = 0.0;
     viewState_.path.clear();
 
-    if (graphWidget_)
-        graphWidget_->clearSelection();
-
-    if (edgeDetails_)
-        edgeDetails_->clearEdge();
-
-    if (resultWidget_)
-        resultWidget_->clearResult();
+    if (graphWidget_)  graphWidget_->clearSelection();
+    if (edgeDetails_)  edgeDetails_->clearEdge();
+    if (resultWidget_) resultWidget_->clearResult();
 }
 
 void MainWindow::refreshViewState()
@@ -310,7 +278,7 @@ void MainWindow::refreshViewState()
     if (!controls_ || !graphWidget_ || !edgeDetails_)
         return;
 
-    viewState_.algorithm = controls_->currentAlgorithm();
+    viewState_.algorithm  = controls_->currentAlgorithm();
     viewState_.inputValue = controls_->parameterValue();
 
     graphWidget_->setViewState(viewState_);
@@ -323,22 +291,75 @@ void MainWindow::logSeparator()
         resultWidget_->appendLog("------------------------------");
 }
 
-QString MainWindow::formatPath(const std::vector<int>& path) const
+
+void MainWindow::runAMCMCPEP(double z)
 {
-    if (path.empty())
-        return "(fara drum)";
+    AMCMCPEP solver;
+    const auto result = solver.solve(*currentGraph_, z);
 
-    QString text;
+    viewState_.hasResult = result.isFeasible;
+    viewState_.resultZ   = z;
+    viewState_.finalCost = result.totalCost;
+    viewState_.path      = result.path;
 
-    for (size_t i = 0; i < path.size(); ++i) {
-        text += QString::number(path[i]);
+    resultWidget_->appendLog(QString("Desired z: %1").arg(z));
+    resultWidget_->appendLog(QString("Feasible: %1").arg(result.isFeasible ? "Yes" : "No"));
+    resultWidget_->appendLog(QString("Total Cost: %1").arg(result.totalCost));
+    resultWidget_->appendLog("Path: " + formatPath(result.path));
 
-        if (i + 1 < path.size())
-            text += " -> ";
-    }
-
-    return text;
+    resultWidget_->setResult("AMCMCPEP", result.path, z, result.totalCost, result.isFeasible);
 }
+
+void MainWindow::runAMCPEBCP(double W)
+{
+    AMCPEBCP solver;
+    const auto result = solver.solve(*currentGraph_, W);
+
+    const bool feasible = !result.path.empty();
+
+    viewState_.hasResult = feasible;
+    viewState_.resultZ   = result.maxCapacity;
+    viewState_.finalCost = result.finalCost;
+    viewState_.path      = result.path;
+
+    resultWidget_->appendLog(QString("Budget W: %1").arg(W));
+    resultWidget_->appendLog(QString("Best z*: %1").arg(result.maxCapacity));
+    resultWidget_->appendLog(QString("Final Cost: %1").arg(result.finalCost));
+    resultWidget_->appendLog("Path: " + formatPath(result.path));
+
+    resultWidget_->setResult("AMCPEBCP", result.path, result.maxCapacity, result.finalCost, feasible);
+}
+
+void MainWindow::runParametricSearch(double W)
+{
+    if (lastLoadedGraphFileName_.isEmpty())
+        throw std::runtime_error(
+            "Nu exista calea fisierului CSV incarcat. Reincarca graful si ruleaza din nou."
+        );
+
+    Graph linearGraph = loadGraphFromCSV(
+        lastLoadedGraphFileName_.toStdString(),
+        CostModel::Linear
+    );
+
+    ParametricSearch solver;
+    const auto result = solver.solve(linearGraph, W);
+
+    const bool feasible = !result.path.empty();
+
+    viewState_.hasResult = feasible;
+    viewState_.resultZ   = result.maxCapacity;
+    viewState_.finalCost = result.finalCost;
+    viewState_.path      = result.path;
+
+    resultWidget_->appendLog(QString("Budget W: %1").arg(W));
+    resultWidget_->appendLog(QString("Best z*: %1").arg(result.maxCapacity));
+    resultWidget_->appendLog(QString("Final Cost: %1").arg(result.finalCost));
+    resultWidget_->appendLog("Path: " + formatPath(result.path));
+
+    resultWidget_->setResult("Parametric Search", result.path, result.maxCapacity, result.finalCost, feasible);
+}
+
 
 void MainWindow::onLoadGraphClicked()
 {
@@ -346,9 +367,7 @@ void MainWindow::onLoadGraphClicked()
     const QString startPath = lastPath.isEmpty() ? defaultDataPath() : lastPath;
 
     const QString fileName = QFileDialog::getOpenFileName(
-        this,
-        "Load Graph",
-        startPath,
+        this, "Load Graph", startPath,
         "CSV Files (*.csv);;All Files (*.*)"
     );
 
@@ -368,6 +387,7 @@ void MainWindow::onGeneratedGraph(const QString& filePath)
 {
     try {
         stackedWidget_->setCurrentWidget(loadRunPage_);
+        sidebar_->setActiveButton(1);
         loadGraphFromFile(filePath);
         resultWidget_->appendLog("Generated CSV loaded automatically.");
         logSeparator();
@@ -387,105 +407,18 @@ void MainWindow::onRunClicked()
     resetResultState();
     refreshViewState();
 
-    const QString selectedAlgo = controls_->currentAlgorithm();
-    const double  inputValue = controls_->parameterValue();
-    const QString parameterName = (selectedAlgo == "AMCMCPEP") ? "z" : "W";
+    const QString algo      = controls_->currentAlgorithm();
+    const double  input     = controls_->parameterValue();
+    const QString paramName = (algo == "AMCMCPEP") ? "z" : "W";
 
     resultWidget_->appendLog(
-        QString("Running %1 with %2=%3")
-        .arg(selectedAlgo)
-        .arg(parameterName)
-        .arg(inputValue)
+        QString("Running %1 with %2=%3").arg(algo, paramName).arg(input)
     );
 
     try {
-        if (selectedAlgo == "AMCMCPEP") {
-            const double z = inputValue;
-
-            AMCMCPEP solver;
-            const auto algResult = solver.solve(*currentGraph_, z);
-
-            viewState_.hasResult = algResult.isFeasible;
-            viewState_.resultZ = z;
-            viewState_.finalCost = algResult.totalCost;
-            viewState_.path = algResult.path;
-
-            resultWidget_->appendLog(QString("Desired z: %1").arg(z));
-            resultWidget_->appendLog(QString("Feasible: %1").arg(algResult.isFeasible ? "Yes" : "No"));
-            resultWidget_->appendLog(QString("Total Cost: %1").arg(algResult.totalCost));
-            resultWidget_->appendLog("Path: " + formatPath(algResult.path));
-
-            resultWidget_->setResult(
-                selectedAlgo,
-                algResult.path,
-                z,
-                algResult.totalCost,
-                algResult.isFeasible
-            );
-        }
-        else if (selectedAlgo == "AMCPEBCP") {
-            const double W = inputValue;
-
-            AMCPEBCP solver;
-            const auto algResult = solver.solve(*currentGraph_, W);
-
-            const bool feasible = !algResult.path.empty();
-
-            viewState_.hasResult = feasible;
-            viewState_.resultZ = algResult.maxCapacity;
-            viewState_.finalCost = algResult.finalCost;
-            viewState_.path = algResult.path;
-
-            resultWidget_->appendLog(QString("Budget W: %1").arg(W));
-            resultWidget_->appendLog(QString("Best z*: %1").arg(algResult.maxCapacity));
-            resultWidget_->appendLog(QString("Final Cost: %1").arg(algResult.finalCost));
-            resultWidget_->appendLog("Path: " + formatPath(algResult.path));
-
-            resultWidget_->setResult(
-                selectedAlgo,
-                algResult.path,
-                algResult.maxCapacity,
-                algResult.finalCost,
-                feasible
-            );
-        }
-        else if (selectedAlgo == "Parametric Search") {
-            const double W = inputValue;
-
-            if (lastLoadedGraphFileName_.isEmpty()) {
-                throw std::runtime_error(
-                    "Nu exista calea fisierului CSV incarcat. Reincarca graful si ruleaza din nou."
-                );
-            }
-
-            Graph linearGraph = loadGraphFromCSV(
-                lastLoadedGraphFileName_.toStdString(),
-                CostModel::Linear
-            );
-
-            ParametricSearch solver;
-            const auto algResult = solver.solve(linearGraph, W);
-
-            const bool feasible = !algResult.path.empty();
-
-            viewState_.hasResult = feasible;
-            viewState_.resultZ = algResult.maxCapacity;
-            viewState_.finalCost = algResult.finalCost;
-            viewState_.path = algResult.path;
-
-            resultWidget_->appendLog(QString("Budget W: %1").arg(W));
-            resultWidget_->appendLog(QString("Best z*: %1").arg(algResult.maxCapacity));
-            resultWidget_->appendLog(QString("Final Cost: %1").arg(algResult.finalCost));
-            resultWidget_->appendLog("Path: " + formatPath(algResult.path));
-
-            resultWidget_->setResult(
-                selectedAlgo,
-                algResult.path,
-                algResult.maxCapacity,
-                algResult.finalCost,
-                feasible
-            );
-        }
+        if      (algo == "AMCMCPEP")         runAMCMCPEP(input);
+        else if (algo == "AMCPEBCP")          runAMCPEBCP(input);
+        else if (algo == "Parametric Search") runParametricSearch(input);
 
         refreshViewState();
         logSeparator();
@@ -515,3 +448,4 @@ void MainWindow::onEdgeSelected(const VisualEdge& edge)
     if (edgeDetails_)
         edgeDetails_->setEdge(edge);
 }
+

@@ -20,11 +20,9 @@ public slots:
     void appendLog(const QString& text);
 
 private:
-    QString formatPath(const std::vector<int>& path) const;
-    QString formatNumber(double value) const;
-
     QLabel* statusLabel_ = nullptr;
     QLabel* pathLabel_ = nullptr;
     QLabel* costLabel_ = nullptr;
     QTextEdit* log_ = nullptr;
 };
+

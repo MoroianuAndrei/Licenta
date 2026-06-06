@@ -136,7 +136,7 @@ static void test_Algorithm3_Fig5()
     printPath(res.path);
     std::cout << "  Asteptat:     z* = 13, drum = 1->2->3->5\n";
 
-    bool ok = (res.maxCapacity == 13) && !res.path.empty();
+    bool ok = (std::abs(res.maxCapacity - 13.0) < 0.01) && !res.path.empty();
     std::cout << "  Status:       " << (ok ? "CORECT" : "DIFERIT DE ASTEPTAT") << "\n";
 }
 

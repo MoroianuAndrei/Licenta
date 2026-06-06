@@ -62,3 +62,4 @@ void ControlPanelWidget::setParameterPrefixForAlgorithm(const QString& algorithm
         parameterSpin_->setToolTip("Bugetul W pentru algoritmii sub constrangere de buget");
     }
 }
+

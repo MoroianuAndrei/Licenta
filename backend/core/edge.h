@@ -7,11 +7,11 @@ private:
     int    from;
     int    to;
     double c;
-    double c_hat; 
+    double c_hat;
     bool   isNewEdge;
     double linearRate;
 
-    std::function<double(double)> u; 
+    std::function<double(double)> u;
     std::function<double(double)> b;
 
 public:

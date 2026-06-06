@@ -13,9 +13,13 @@ class AMCMCPEP
 {
 private:
     std::vector<double> M;
+
     std::vector<double> S;
-    std::vector<int> R;
-    std::vector<int> p;
+
+    std::vector<bool>   permanent;
+
+    std::vector<int>    p;
+
 
     std::vector<int> getPath(int sourceNode, int targetNode);
 

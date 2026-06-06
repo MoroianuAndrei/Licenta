@@ -55,12 +55,15 @@ std::vector<int> AMCMCPEP::getPath(int sourceNode, int targetNode)
     return path;
 }
 
+
 AMCMCPEP_Result AMCMCPEP::solve(const Graph& G, double z)
 {
     int n = G.getNodesCount();
 
+
     if (!isTargetReachable(G, z))
         return { false, 0.0, {} };
+
 
     auto mcpResult = G.findMCPWithPath(false);
     double mcpCap = mcpResult.first;
@@ -68,20 +71,22 @@ AMCMCPEP_Result AMCMCPEP::solve(const Graph& G, double z)
     if (mcpCap >= z)
         return { true, 0.0, mcpResult.second };
 
+
     M.assign(n + 1, std::numeric_limits<double>::infinity());
     S.assign(n + 1, std::numeric_limits<double>::infinity());
-    R.assign(n + 1, 0);
+    permanent.assign(n + 1, false);
     p.assign(n + 1, -1);
 
     M[G.getSource()] = 0.0;
     S[G.getSource()] = 0.0;
 
-    while (R[G.getTarget()] == 0)
+
+    while (!permanent[G.getTarget()])
     {
         int u = -1;
         double minVal = std::numeric_limits<double>::infinity();
         for (int i = 1; i <= n; ++i)
-            if (R[i] == 0 && (M[i] + S[i]) < minVal)
+            if (!permanent[i] && (M[i] + S[i]) < minVal)
             {
                 minVal = M[i] + S[i];
                 u = i;
@@ -90,17 +95,20 @@ AMCMCPEP_Result AMCMCPEP::solve(const Graph& G, double z)
         if (u == -1)
             return { false, 0.0, {} };
 
-        R[u] = 1;
+        permanent[u] = true;
+
 
         for (const Edge& e : G.getEdgesFrom(u))
         {
             int v = e.getTo();
-            if (R[v] != 0) continue;
+            if (permanent[v]) continue;
 
             if (e.getMaxCapacity() < z) continue;
 
+
             double costU = (e.getCapacity() >= z) ? 0.0 : e.getMaxCost(z);
             double costB = (e.getCapacity() >= z) ? 0.0 : e.getSumCost(z);
+
 
             double newMax = std::max(M[u], costU);
             double newTotal = newMax + S[u] + costB;
