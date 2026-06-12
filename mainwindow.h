@@ -46,6 +46,7 @@ private:
 
     void loadGraphFromFile(const QString& fileName);
 
+    void runMCP();
     void runAMCMCPEP(double z);
     void runAMCPEBCP(double W);
     void runParametricSearch(double W);

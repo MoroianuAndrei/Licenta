@@ -10,6 +10,7 @@ ControlPanelWidget::ControlPanelWidget(QWidget* parent)
     : QWidget(parent)
 {
     algorithmCombo_ = new QComboBox(this);
+    algorithmCombo_->addItem("MCP");
     algorithmCombo_->addItem("AMCMCPEP");
     algorithmCombo_->addItem("AMCPEBCP");
     algorithmCombo_->addItem("Parametric Search");
@@ -40,6 +41,8 @@ ControlPanelWidget::ControlPanelWidget(QWidget* parent)
         emit algorithmChanged(text);
     });
     connect(parameterSpin_, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &ControlPanelWidget::parameterChanged);
+
+    setParameterPrefixForAlgorithm(algorithmCombo_->currentText());
 }
 
 QString ControlPanelWidget::currentAlgorithm() const
@@ -54,10 +57,14 @@ double ControlPanelWidget::parameterValue() const
 
 void ControlPanelWidget::setParameterPrefixForAlgorithm(const QString& algorithm)
 {
-    if (algorithm == "AMCMCPEP") {
+    if (algorithm == "MCP") {
+        parameterSpin_->setVisible(false);
+    } else if (algorithm == "AMCMCPEP") {
+        parameterSpin_->setVisible(true);
         parameterSpin_->setPrefix("z = ");
         parameterSpin_->setToolTip("Capacitatea tinta z pentru MCMCPEP");
     } else {
+        parameterSpin_->setVisible(true);
         parameterSpin_->setPrefix("W = ");
         parameterSpin_->setToolTip("Bugetul W pentru algoritmii sub constrangere de buget");
     }

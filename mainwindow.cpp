@@ -292,6 +292,21 @@ void MainWindow::logSeparator()
 }
 
 
+void MainWindow::runMCP()
+{
+    auto [mcpCap, path] = currentGraph_->findMCPWithPath(false);
+
+    viewState_.hasResult = !path.empty();
+    viewState_.resultZ   = 0.0;
+    viewState_.finalCost = 0.0;
+    viewState_.path      = path;
+
+    resultWidget_->appendLog(QString("Capacitate MCP curenta: %1").arg(mcpCap));
+    resultWidget_->appendLog("Drum: " + formatPath(path));
+
+    resultWidget_->setResult("MCP", path, mcpCap, 0.0, !path.empty());
+}
+
 void MainWindow::runAMCMCPEP(double z)
 {
     AMCMCPEP solver;
@@ -407,16 +422,21 @@ void MainWindow::onRunClicked()
     resetResultState();
     refreshViewState();
 
-    const QString algo      = controls_->currentAlgorithm();
-    const double  input     = controls_->parameterValue();
-    const QString paramName = (algo == "AMCMCPEP") ? "z" : "W";
+    const QString algo  = controls_->currentAlgorithm();
+    const double  input = controls_->parameterValue();
 
-    resultWidget_->appendLog(
-        QString("Running %1 with %2=%3").arg(algo, paramName).arg(input)
-    );
+    if (algo == "MCP")
+        resultWidget_->appendLog("Running MCP");
+    else {
+        const QString paramName = (algo == "AMCMCPEP") ? "z" : "W";
+        resultWidget_->appendLog(
+            QString("Running %1 with %2=%3").arg(algo, paramName).arg(input)
+        );
+    }
 
     try {
-        if      (algo == "AMCMCPEP")         runAMCMCPEP(input);
+        if      (algo == "MCP")               runMCP();
+        else if (algo == "AMCMCPEP")          runAMCMCPEP(input);
         else if (algo == "AMCPEBCP")          runAMCPEBCP(input);
         else if (algo == "Parametric Search") runParametricSearch(input);
 
