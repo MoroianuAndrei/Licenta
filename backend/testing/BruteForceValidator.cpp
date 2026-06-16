@@ -52,10 +52,10 @@ void BruteForceValidator::dfsAllPaths(
     if (current == target)
     {
         double cost = computePathCost(G, currentPath, z);
-        if (cost < bestCost)
+        if (cost < bestCost_)
         {
-            bestCost = cost;
-            bestPath = currentPath;
+            bestCost_ = cost;
+            bestPath_ = currentPath;
         }
         return;
     }
@@ -82,8 +82,8 @@ void BruteForceValidator::dfsAllPaths(
 
 BruteForceResult BruteForceValidator::solveAMCMCPEP(const Graph& G, double z)
 {
-    bestCost = std::numeric_limits<double>::infinity();
-    bestPath.clear();
+    bestCost_ = std::numeric_limits<double>::infinity();
+    bestPath_.clear();
 
     std::vector<bool> visited(G.getNodesCount() + 1, false);
     std::vector<int> currentPath;
@@ -96,8 +96,8 @@ BruteForceResult BruteForceValidator::solveAMCMCPEP(const Graph& G, double z)
 
     dfsAllPaths(G, s, t, z, visited, currentPath);
 
-    if (bestPath.empty())
+    if (bestPath_.empty())
         return { false, 0.0, {} };
 
-    return { true, bestCost, bestPath };
+    return { true, bestCost_, bestPath_ };
 }

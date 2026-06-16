@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <vector>
 #include "graph.h"
 
@@ -12,16 +12,7 @@ struct AMCMCPEP_Result
 class AMCMCPEP
 {
 private:
-    std::vector<double> M;
-
-    std::vector<double> S;
-
-    std::vector<bool> permanent;
-
-    std::vector<int> p;
-
-
-    std::vector<int> getPath(int sourceNode, int targetNode);
+    std::vector<int> reconstructPath(int source, int target, const std::vector<int>& parent);
 
     bool isTargetReachable(const Graph& G, double z) const;
 

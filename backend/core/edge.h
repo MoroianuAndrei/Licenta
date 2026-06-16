@@ -1,18 +1,18 @@
-﻿#pragma once
+#pragma once
 #include <functional>
 
 class Edge
 {
 private:
-    int from;
-    int to;
-    double c;
-    double c_hat;
-    bool isNewEdge;
-    double linearRate;
+    int from_;
+    int to_;
+    double capacity_;
+    double maxCapacity_;
+    bool isNew_;
+    double linearRate_;
 
-    std::function<double(double)> u;
-    std::function<double(double)> b;
+    std::function<double(double)> u_;
+    std::function<double(double)> b_;
 
 public:
     Edge(int from, int to, double capacity, double max_capacity, bool isNew,
@@ -27,9 +27,6 @@ public:
     double getCapacity() const;
     double getMaxCapacity() const;
     bool isNew() const;
-
-    void setCapacity(double newCapacity);
-    void setMaxCapacity(double newMaxCapacity);
 
     double getSumCost(double z) const;
     double getMaxCost(double z) const;

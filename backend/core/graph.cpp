@@ -1,33 +1,33 @@
-﻿#include "graph.h"
+#include "graph.h"
 #include <limits>
 
 Graph::Graph(int nodeCount, int source, int target)
-    : n(nodeCount), s(source), t(target)
+    : nodeCount_(nodeCount), source_(source), target_(target)
 {
-    adj.resize(n + 1);
+    adj_.resize(nodeCount_ + 1);
 }
 
-int Graph::getNodesCount() const { return n; }
-int Graph::getSource() const { return s; }
-int Graph::getTarget() const { return t; }
+int Graph::getNodesCount() const { return nodeCount_; }
+int Graph::getSource() const { return source_; }
+int Graph::getTarget() const { return target_; }
 
 void Graph::addEdge(const Edge& edge)
 {
-    adj[edge.getFrom()].push_back(edge);
+    adj_[edge.getFrom()].push_back(edge);
 }
 
 const std::vector<Edge>& Graph::getEdgesFrom(int nodeId) const
 {
-    return adj[nodeId];
+    return adj_[nodeId];
 }
 
 std::vector<Edge> Graph::getAllEdges() const
 {
     std::vector<Edge> allEdges;
 
-    for (int i = 1; i <= n; ++i)
+    for (int i = 1; i <= nodeCount_; ++i)
     {
-        for (const auto& edge : adj[i])
+        for (const auto& edge : adj_[i])
         {
             allEdges.push_back(edge);
         }
@@ -37,18 +37,18 @@ std::vector<Edge> Graph::getAllEdges() const
 
 std::pair<double, std::vector<int>> Graph::findMCPWithPath(bool useMaxCapacities) const
 {
-    std::vector<double> cap(n + 1, -1.0);
-    std::vector<bool> vis(n + 1, false);
-    std::vector<int> parent(n + 1, -1);
+    std::vector<double> cap(nodeCount_ + 1, -1.0);
+    std::vector<bool> vis(nodeCount_ + 1, false);
+    std::vector<int> parent(nodeCount_ + 1, -1);
 
-    cap[s] = std::numeric_limits<double>::infinity();
+    cap[source_] = std::numeric_limits<double>::infinity();
 
-    for (int iter = 0; iter < n; ++iter)
+    for (int iter = 0; iter < nodeCount_; ++iter)
     {
         int u = -1;
         double mx = -1.0;
 
-        for (int j = 1; j <= n; ++j)
+        for (int j = 1; j <= nodeCount_; ++j)
         {
             if (!vis[j] && cap[j] > mx)
             {
@@ -57,12 +57,12 @@ std::pair<double, std::vector<int>> Graph::findMCPWithPath(bool useMaxCapacities
             }
         }
 
-        if (u == -1 || u == t)
+        if (u == -1 || u == target_)
             break;
 
         vis[u] = true;
 
-        for (const Edge& e : adj[u])
+        for (const Edge& e : adj_[u])
         {
             if (!useMaxCapacities && e.isNew())
                 continue;
@@ -83,23 +83,23 @@ std::pair<double, std::vector<int>> Graph::findMCPWithPath(bool useMaxCapacities
     }
 
     std::vector<int> path;
-    if (cap[t] < 0)
-        return { cap[t], path };
+    if (cap[target_] < 0)
+        return { cap[target_], path };
 
-    int curr = t;
+    int curr = target_;
     while (curr != -1)
     {
         path.push_back(curr);
-        if (curr == s)
+        if (curr == source_)
             break;
         curr = parent[curr];
     }
 
-    if (path.empty() || path.back() != s)
-        return { cap[t], {} };
+    if (path.empty() || path.back() != source_)
+        return { cap[target_], {} };
 
     std::reverse(path.begin(), path.end());
-    return { cap[t], path };
+    return { cap[target_], path };
 }
 
 double Graph::findMCP(bool useMaxCapacities) const

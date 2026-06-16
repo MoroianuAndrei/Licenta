@@ -12,8 +12,8 @@ struct BruteForceResult
 class BruteForceValidator
 {
 private:
-    double bestCost;
-    std::vector<int> bestPath;
+    double bestCost_;
+    std::vector<int> bestPath_;
 
     void dfsAllPaths(
         const Graph& G,
