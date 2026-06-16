@@ -46,6 +46,7 @@ std::pair<double, double> ParametricSearch::phaseI(
         int k = (L + U) / 2;
 
         AMCMCPEP_Result res = oracle.solve(G, Z[k]);
+        ++oracleCalls_;
 
         if (res.isFeasible && res.totalCost <= W)
             L = k;
@@ -108,6 +109,7 @@ ParametricResult ParametricSearch::phaseII(
                 else
                 {
                     AMCMCPEP_Result res = oracle.solve(G, z_int);
+                    ++oracleCalls_;
 
                     if (res.isFeasible && res.totalCost <= W)
                         L_val = z_int;
@@ -186,6 +188,7 @@ ParametricResult ParametricSearch::phaseII(
                     else
                     {
                         AMCMCPEP_Result res = oracle.solve(G, z_crit);
+                        ++oracleCalls_;
 
                         if (res.isFeasible && res.totalCost <= W)
                             L_val = z_crit;
@@ -220,6 +223,7 @@ ParametricResult ParametricSearch::phaseII(
 
     std::vector<int> path;
     AMCMCPEP_Result finalRes = oracle.solve(G, optimal_z);
+    ++oracleCalls_;
 
     if (finalRes.isFeasible && !finalRes.path.empty())
     {
@@ -227,12 +231,14 @@ ParametricResult ParametricSearch::phaseII(
         finalCost = finalRes.totalCost;
     }
 
-    return { optimal_z, finalCost, path };
+    return { optimal_z, finalCost, path, oracleCalls_ };
 }
 
 
 ParametricResult ParametricSearch::solve(const Graph& G, double W)
 {
+    oracleCalls_ = 0;
+
     double zmin = G.findMCP(false);
     double zmax = G.findMCP(true);
 

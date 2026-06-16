@@ -151,6 +151,42 @@ namespace
         GraphWidget* owner_ = nullptr;
         VisualEdge edge_;
     };
+
+    class NodeItem final : public QGraphicsEllipseItem
+    {
+    public:
+        NodeItem(GraphWidget* owner, int nodeId)
+            : QGraphicsEllipseItem(
+                -kBaseNodeRadius, -kBaseNodeRadius,
+                 kBaseNodeRadius * 2.0, kBaseNodeRadius * 2.0),
+              owner_(owner), nodeId_(nodeId)
+        {
+            setAcceptedMouseButtons(Qt::LeftButton);
+            setAcceptHoverEvents(true);
+            setZValue(12);
+            setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+        }
+
+    protected:
+        void mousePressEvent(QGraphicsSceneMouseEvent* event) override
+        {
+            Q_UNUSED(event);
+            if (owner_) owner_->handleNodeClick(nodeId_);
+        }
+
+        void hoverEnterEvent(QGraphicsSceneHoverEvent* event) override
+        {
+            Q_UNUSED(event);
+            if (owner_ && owner_->selectionMode() != 0)
+                setCursor(Qt::PointingHandCursor);
+            else
+                setCursor(Qt::ArrowCursor);
+        }
+
+    private:
+        GraphWidget* owner_ = nullptr;
+        int nodeId_ = 0;
+    };
 }
 
 
@@ -200,6 +236,24 @@ void GraphWidget::setLargeGraphMode(bool enabled)
 {
     largeGraphMode_ = enabled;
     redraw();
+}
+
+void GraphWidget::setSourceTarget(int source, int target)
+{
+    sourceNode_ = source;
+    targetNode_ = target;
+    redraw();
+}
+
+void GraphWidget::setSelectionMode(int mode)
+{
+    selectionMode_ = mode;
+}
+
+void GraphWidget::handleNodeClick(int nodeId)
+{
+    if (selectionMode_ != 0)
+        emit nodeSelected(nodeId);
 }
 
 double GraphWidget::currentViewScale() const
@@ -364,15 +418,25 @@ void GraphWidget::drawNodes(const std::map<int, QPointF>& pos, const std::set<in
     {
         const QPointF p = pos.at(node);
 
-        auto* circle = scene_->addEllipse(
-            -kBaseNodeRadius, -kBaseNodeRadius,
-             kBaseNodeRadius * 2.0, kBaseNodeRadius * 2.0,
-            QPen(QColor(110, 190, 255), 2.0),
-            QBrush(QColor(22, 63, 108))
-        );
+        QColor fillColor(22, 63, 108);
+        QColor borderColor(110, 190, 255);
+
+        if (node == sourceNode_)
+        {
+            fillColor  = QColor(20, 110, 55);
+            borderColor = QColor(46, 213, 115);
+        }
+        else if (node == targetNode_)
+        {
+            fillColor  = QColor(110, 25, 35);
+            borderColor = QColor(255, 80, 95);
+        }
+
+        auto* circle = new NodeItem(this, node);
+        circle->setPen(QPen(borderColor, 2.0));
+        circle->setBrush(QBrush(fillColor));
         circle->setPos(p);
-        circle->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
-        circle->setZValue(10);
+        scene_->addItem(circle);
 
         if (showLabels)
         {
@@ -381,7 +445,7 @@ void GraphWidget::drawNodes(const std::map<int, QPointF>& pos, const std::set<in
             text->setFont(QFont("Segoe UI", 11, QFont::Bold));
             const QRectF br = text->boundingRect();
             text->setPos(-br.width() / 2.0, -br.height() / 2.0);
-            text->setZValue(11);
+            text->setZValue(13);
         }
     }
 }

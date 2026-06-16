@@ -23,15 +23,17 @@ private slots:
 private:
     QString defaultDataPath() const;
 
-    QSpinBox* nodesSpinBox = nullptr;
-    QSpinBox* pathsSpinBox = nullptr;
-    QSpinBox* cyclesSpinBox = nullptr;
-    QDoubleSpinBox* probabilitySpinBox = nullptr;
-    QSpinBox* minCapacitySpinBox = nullptr;
-    QSpinBox* maxCapacitySpinBox = nullptr;
-    QSpinBox* maxCapacityLimitSpinBox = nullptr;
-    QSpinBox* seedSpinBox = nullptr;
-    QPushButton* generateButton = nullptr;
-    QLabel* statusLabel = nullptr;
+    QSpinBox* nodesSpinBox_ = nullptr;
+    QSpinBox* sourceSpinBox_ = nullptr;
+    QSpinBox* targetSpinBox_ = nullptr;
+    QSpinBox* pathsSpinBox_ = nullptr;
+    QSpinBox* cyclesSpinBox_ = nullptr;
+    QDoubleSpinBox* probabilitySpinBox_ = nullptr;
+    QSpinBox* minCapacitySpinBox_ = nullptr;
+    QSpinBox* maxCapacitySpinBox_ = nullptr;
+    QSpinBox* maxCapacityLimitSpinBox_ = nullptr;
+    QSpinBox* seedSpinBox_ = nullptr;
+    QPushButton* generateButton_ = nullptr;
+    QLabel* statusLabel_ = nullptr;
 };
 

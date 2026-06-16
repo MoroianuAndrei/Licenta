@@ -55,13 +55,7 @@ BenchmarkEntry PerformanceTest::runSingle(int nodes, double W, int maxCapacityLi
         entry.amcpebcp_time_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
         entry.amcpebcp_result_z = res.maxCapacity;
         entry.amcpebcp_result_cost = res.finalCost;
-
-        double zmin = G.findMCP(false);
-        double zmax = G.findMCP(true);
-        int interval = (int)(zmax - zmin);
-        entry.amcpebcp_oracle_calls = interval > 1
-            ? (int)std::ceil(std::log2(interval)) + 2
-            : 1;
+        entry.amcpebcp_oracle_calls = res.oracleCalls;
     }
 
     {
@@ -75,7 +69,7 @@ BenchmarkEntry PerformanceTest::runSingle(int nodes, double W, int maxCapacityLi
         entry.parametric_time_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
         entry.parametric_result_z = res.maxCapacity;
         entry.parametric_result_cost = res.finalCost;
-        entry.parametric_oracle_calls = nodes * (nodes - 1) / 2;
+        entry.parametric_oracle_calls = res.oracleCalls;
     }
 
     entry.z_difference = std::abs(entry.amcpebcp_result_z - entry.parametric_result_z);

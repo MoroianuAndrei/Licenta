@@ -11,9 +11,6 @@
 #include <QColor>
 #include <QFont>
 
-#include <sstream>
-
-
 void BenchmarkWorker::run()
 {
     PerformanceTest test;
@@ -61,16 +58,6 @@ void BenchmarkWidget::buildUi()
     auto* title = new QLabel("Benchmark: AMCPEBCP vs Parametric Search");
     title->setObjectName("PanelTitle");
     rootLayout->addWidget(title);
-
-
-    auto* desc = new QLabel(
-        "Ambii algoritmi ruleaza pe acelasi graf generat random cu cost liniar.\n"
-        "Alg3 face O(log(interval)) apeluri oracle [slab polinomial].\n"
-        "Alg4 face O(n\xC2\xB2) apeluri oracle [puternic polinomial] — castiga cand intervalul e mare si n e mic."
-    );
-    desc->setObjectName("PanelContent");
-    desc->setWordWrap(true);
-    rootLayout->addWidget(desc);
 
 
     auto* paramGroup = new QGroupBox("Parametri benchmark");
@@ -131,8 +118,8 @@ void BenchmarkWidget::buildUi()
     resultsTable_ = new QTableWidget(0, 11);
     resultsTable_->setHorizontalHeaderLabels({
         "Noduri", "Arce", "W",
-        "AMCPEBCP (ms)", "Apeluri Alg3", "z* Alg3",
-        "Param. Search (ms)", "Apeluri Alg4", "z* Alg4",
+        "AMCPEBCP (ms)", "Apeluri AMCPEBCP", "z* AMCPEBCP",
+        "Param. Search (ms)", "Apeluri Param. Search", "z* Param. Search",
         "Castigator",
         "\xCE\x94z*"
     });
@@ -252,7 +239,7 @@ void BenchmarkWidget::addTableRow(const BenchmarkEntry& e, int row)
     addItem(8, QString::number(e.parametric_result_z, 'f', 4));
 
 
-    QString winner = alg4Wins ? "Alg4 (Param)" : "Alg3 (AMCPEBCP)";
+    QString winner = alg4Wins ? "Param. Search" : "AMCPEBCP";
     QColor winColor = alg4Wins ? QColor("#2ecc71") : QColor("#7dd3fc");
     addItem(9, winner, winColor, true);
 
@@ -348,7 +335,7 @@ void BenchmarkWidget::onEntryReady(BenchmarkEntry entry)
         .arg(entry.parametric_time_ms, 0, 'f', 2)
         .arg(entry.parametric_oracle_calls)
         .arg(entry.parametric_result_z, 0, 'f', 4)
-        .arg(alg4Wins ? "Alg4" : "Alg3")
+        .arg(alg4Wins ? "Param. Search" : "AMCPEBCP")
         .arg(entry.z_difference, 0, 'f', 6)
     );
 }

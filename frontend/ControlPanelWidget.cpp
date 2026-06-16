@@ -22,6 +22,18 @@ ControlPanelWidget::ControlPanelWidget(QWidget* parent)
     parameterSpin_->setMinimumWidth(170);
     parameterSpin_->setPrefix("z = ");
 
+    sourceButton_ = new QPushButton("s", this);
+    sourceButton_->setCheckable(true);
+    sourceButton_->setMinimumWidth(75);
+    sourceButton_->setObjectName("SourceButton");
+    sourceButton_->setToolTip("Apasa, apoi click pe un nod pentru a-l seta ca sursa");
+
+    targetButton_ = new QPushButton("t", this);
+    targetButton_->setCheckable(true);
+    targetButton_->setMinimumWidth(75);
+    targetButton_->setObjectName("TargetButton");
+    targetButton_->setToolTip("Apasa, apoi click pe un nod pentru a-l seta ca destinatie");
+
     loadButton_ = new QPushButton("Import date (CSV)", this);
     runButton_ = new QPushButton("Ruleaza algoritm", this);
 
@@ -31,6 +43,8 @@ ControlPanelWidget::ControlPanelWidget(QWidget* parent)
     layout->addWidget(new QLabel("Algoritm:", this));
     layout->addWidget(algorithmCombo_, 1);
     layout->addWidget(parameterSpin_);
+    layout->addWidget(sourceButton_);
+    layout->addWidget(targetButton_);
     layout->addWidget(loadButton_);
     layout->addWidget(runButton_);
 
@@ -40,7 +54,36 @@ ControlPanelWidget::ControlPanelWidget(QWidget* parent)
         setParameterPrefixForAlgorithm(text);
         emit algorithmChanged(text);
     });
-    connect(parameterSpin_, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &ControlPanelWidget::parameterChanged);
+    connect(parameterSpin_, qOverload<double>(&QDoubleSpinBox::valueChanged),
+        this, &ControlPanelWidget::parameterChanged);
+
+    connect(sourceButton_, &QPushButton::toggled, this, [this](bool checked) {
+        if (checked)
+        {
+            targetButton_->blockSignals(true);
+            targetButton_->setChecked(false);
+            targetButton_->blockSignals(false);
+            emit selectionModeChanged(1);
+        }
+        else
+        {
+            emit selectionModeChanged(0);
+        }
+    });
+
+    connect(targetButton_, &QPushButton::toggled, this, [this](bool checked) {
+        if (checked)
+        {
+            sourceButton_->blockSignals(true);
+            sourceButton_->setChecked(false);
+            sourceButton_->blockSignals(false);
+            emit selectionModeChanged(2);
+        }
+        else
+        {
+            emit selectionModeChanged(0);
+        }
+    });
 
     setParameterPrefixForAlgorithm(algorithmCombo_->currentText());
 }
@@ -53,6 +96,34 @@ QString ControlPanelWidget::currentAlgorithm() const
 double ControlPanelWidget::parameterValue() const
 {
     return parameterSpin_->value();
+}
+
+int ControlPanelWidget::sourceNodeValue() const
+{
+    return currentSource_;
+}
+
+int ControlPanelWidget::targetNodeValue() const
+{
+    return currentTarget_;
+}
+
+void ControlPanelWidget::setSourceTarget(int s, int t)
+{
+    currentSource_ = s;
+    currentTarget_ = t;
+    sourceButton_->setText(QString("s: %1").arg(s));
+    targetButton_->setText(QString("t: %1").arg(t));
+}
+
+void ControlPanelWidget::deactivateSelectionMode()
+{
+    sourceButton_->blockSignals(true);
+    targetButton_->blockSignals(true);
+    sourceButton_->setChecked(false);
+    targetButton_->setChecked(false);
+    sourceButton_->blockSignals(false);
+    targetButton_->blockSignals(false);
 }
 
 void ControlPanelWidget::setParameterPrefixForAlgorithm(const QString& algorithm)
@@ -74,4 +145,3 @@ void ControlPanelWidget::setParameterPrefixForAlgorithm(const QString& algorithm
         parameterSpin_->setToolTip("Bugetul W pentru algoritmii sub constrangere de buget");
     }
 }
-

@@ -1,5 +1,4 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
 
 #include <QMainWindow>
 #include <QString>
@@ -73,5 +72,4 @@ private:
     AlgorithmViewState viewState_;
 };
 
-#endif
 

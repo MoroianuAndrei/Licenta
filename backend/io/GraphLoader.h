@@ -11,6 +11,8 @@ enum class CostModel
 
 Graph loadGraphFromCSV(
     const std::string& filename,
-    CostModel costModel = CostModel::ArticleGeneral
+    CostModel costModel = CostModel::ArticleGeneral,
+    int source = 1,
+    int target = -1
 );
 

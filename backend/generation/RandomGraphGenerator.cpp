@@ -64,13 +64,19 @@ bool RandomGraphGenerator::hasArc(int from, int to) const
 
 void RandomGraphGenerator::generateRandomSTPath()
 {
-    const int s = 1;
-    const int t = params.nodes;
+    const int s = params.source;
+    const int t = (params.target > 0) ? params.target : params.nodes;
 
-    auto middleNodes = shuffledNodes(2, params.nodes - 1);
+    std::vector<int> middleNodes;
+    for (int i = 1; i <= params.nodes; ++i)
+    {
+        if (i != s && i != t)
+            middleNodes.push_back(i);
+    }
+    std::shuffle(middleNodes.begin(), middleNodes.end(), rng);
 
-    int maxMiddle = static_cast<int>(middleNodes.size());
-    int middleCount = randomInt(0, maxMiddle);
+    const int maxMiddle = static_cast<int>(middleNodes.size());
+    const int middleCount = maxMiddle > 0 ? randomInt(0, maxMiddle) : 0;
 
     std::vector<int> path;
     path.push_back(s);

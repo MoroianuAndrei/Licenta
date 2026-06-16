@@ -112,6 +112,41 @@ void MainWindow::buildUi()
     connect(controls_, &ControlPanelWidget::parameterChanged,
         this, &MainWindow::onParameterChanged);
 
+    connect(controls_, &ControlPanelWidget::selectionModeChanged,
+        this, [this](int mode) {
+            graphWidget_->setSelectionMode(mode);
+        });
+
+    connect(graphWidget_, &GraphWidget::nodeSelected,
+        this, [this](int nodeId) {
+            if (!currentGraph_)
+                return;
+
+            const int s = controls_->sourceNodeValue();
+            const int t = controls_->targetNodeValue();
+            const int mode = graphWidget_->selectionMode();
+
+            int newS = s;
+            int newT = t;
+
+            if (mode == 1)
+                newS = nodeId;
+            else if (mode == 2)
+                newT = nodeId;
+
+            controls_->deactivateSelectionMode();
+            graphWidget_->setSelectionMode(0);
+
+            if (newS == newT)
+            {
+                resultWidget_->appendLog("Sursa si destinatia nu pot fi acelasi nod.");
+                return;
+            }
+
+            controls_->setSourceTarget(newS, newT);
+            loadGraphFromFile(lastLoadedGraphFileName_);
+        });
+
     connect(graphWidget_, &GraphWidget::edgeSelected,
         this, &MainWindow::onEdgeSelected);
 }
@@ -184,6 +219,20 @@ void MainWindow::applyStyle()
 
         QPushButton:hover { background-color: #1d3a6a; border-color: #64b5ff; }
         QPushButton:pressed { background-color: #0f2a50; }
+
+        #SourceButton:checked
+        {
+            background-color: #14692f;
+            border: 1px solid #2ed573;
+            color: #2ed573;
+        }
+
+        #TargetButton:checked
+        {
+            background-color: #6e1923;
+            border: 1px solid #ff505f;
+            color: #ff505f;
+        }
     )");
 }
 
@@ -252,13 +301,22 @@ void MainWindow::loadGraphFromFile(const QString& fileName)
 {
     lastLoadedGraphFileName_ = fileName;
 
-    currentGraph_ = loadGraphFromCSV(fileName.toStdString(), CostModel::ArticleGeneral);
+    currentGraph_ = loadGraphFromCSV(
+        fileName.toStdString(),
+        CostModel::ArticleGeneral,
+        controls_->sourceNodeValue(),
+        controls_->targetNodeValue()
+    );
     visualEdges_ = loadVisualEdgesFromCSV(fileName);
+
+    controls_->setSourceTarget(currentGraph_->getSource(), currentGraph_->getTarget());
+    graphWidget_->setSourceTarget(currentGraph_->getSource(), currentGraph_->getTarget());
 
     resetResultState();
     refreshViewState();
 
-    const bool isLarge = (int)visualEdges_.size() > 80;
+    constexpr int kLargeGraphThreshold = 80;
+    const bool isLarge = (int)visualEdges_.size() > kLargeGraphThreshold;
     graphWidget_->setLargeGraphMode(isLarge);
     graphWidget_->setEdges(visualEdges_);
 
@@ -364,7 +422,9 @@ void MainWindow::runParametricSearch(double W)
 
     Graph linearGraph = loadGraphFromCSV(
         lastLoadedGraphFileName_.toStdString(),
-        CostModel::Linear
+        CostModel::Linear,
+        currentGraph_->getSource(),
+        currentGraph_->getTarget()
     );
 
     ParametricSearch solver;

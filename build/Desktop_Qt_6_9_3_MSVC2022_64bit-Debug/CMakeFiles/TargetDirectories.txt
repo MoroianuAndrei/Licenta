@@ -1,8 +1,0 @@
-D:/Licenta/Licenta/build/Desktop_Qt_6_9_3_MSVC2022_64bit-Debug/CMakeFiles/Licenta.dir
-D:/Licenta/Licenta/build/Desktop_Qt_6_9_3_MSVC2022_64bit-Debug/CMakeFiles/edit_cache.dir
-D:/Licenta/Licenta/build/Desktop_Qt_6_9_3_MSVC2022_64bit-Debug/CMakeFiles/rebuild_cache.dir
-D:/Licenta/Licenta/build/Desktop_Qt_6_9_3_MSVC2022_64bit-Debug/CMakeFiles/list_install_components.dir
-D:/Licenta/Licenta/build/Desktop_Qt_6_9_3_MSVC2022_64bit-Debug/CMakeFiles/install.dir
-D:/Licenta/Licenta/build/Desktop_Qt_6_9_3_MSVC2022_64bit-Debug/CMakeFiles/install/local.dir
-D:/Licenta/Licenta/build/Desktop_Qt_6_9_3_MSVC2022_64bit-Debug/CMakeFiles/Licenta_autogen_timestamp_deps.dir
-D:/Licenta/Licenta/build/Desktop_Qt_6_9_3_MSVC2022_64bit-Debug/CMakeFiles/Licenta_autogen.dir

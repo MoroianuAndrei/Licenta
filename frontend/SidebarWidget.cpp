@@ -51,39 +51,39 @@ SidebarWidget::SidebarWidget(QWidget* parent)
         "color: white;"
     );
 
-    generateButton = new QPushButton("Generate Graph CSV");
-    loadRunButton = new QPushButton("Load & Run CSV");
-    benchmarkButton = new QPushButton("Benchmark");
-    testsButton = new QPushButton("Tests & Validation");
+    generateButton_ = new QPushButton("Generate Graph CSV");
+    loadRunButton_ = new QPushButton("Load & Run CSV");
+    benchmarkButton_ = new QPushButton("Benchmark");
+    testsButton_ = new QPushButton("Tests & Validation");
 
     layout->addWidget(title);
     layout->addSpacing(24);
-    layout->addWidget(generateButton);
-    layout->addWidget(loadRunButton);
-    layout->addWidget(benchmarkButton);
-    layout->addWidget(testsButton);
+    layout->addWidget(generateButton_);
+    layout->addWidget(loadRunButton_);
+    layout->addWidget(benchmarkButton_);
+    layout->addWidget(testsButton_);
     layout->addStretch();
 
     setStyleSheet("background-color: #070b18;");
 
     applyButtonStyles();
 
-    connect(generateButton, &QPushButton::clicked, this, [this]() {
+    connect(generateButton_, &QPushButton::clicked, this, [this]() {
         setActiveButton(0);
         emit generateGraphClicked();
     });
 
-    connect(loadRunButton, &QPushButton::clicked, this, [this]() {
+    connect(loadRunButton_, &QPushButton::clicked, this, [this]() {
         setActiveButton(1);
         emit loadRunClicked();
     });
 
-    connect(benchmarkButton, &QPushButton::clicked, this, [this]() {
+    connect(benchmarkButton_, &QPushButton::clicked, this, [this]() {
         setActiveButton(2);
         emit benchmarkClicked();
     });
 
-    connect(testsButton, &QPushButton::clicked, this, [this]() {
+    connect(testsButton_, &QPushButton::clicked, this, [this]() {
         setActiveButton(3);
         emit testsClicked();
     });
@@ -97,9 +97,9 @@ void SidebarWidget::setActiveButton(int index)
 
 void SidebarWidget::applyButtonStyles()
 {
-    generateButton ->setStyleSheet(activeIndex_ == 0 ? kActiveStyle : kNormalStyle);
-    loadRunButton ->setStyleSheet(activeIndex_ == 1 ? kActiveStyle : kNormalStyle);
-    benchmarkButton->setStyleSheet(activeIndex_ == 2 ? kActiveStyle : kNormalStyle);
-    testsButton ->setStyleSheet(activeIndex_ == 3 ? kActiveStyle : kNormalStyle);
+    generateButton_->setStyleSheet(activeIndex_ == 0 ? kActiveStyle : kNormalStyle);
+    loadRunButton_->setStyleSheet(activeIndex_ == 1 ? kActiveStyle : kNormalStyle);
+    benchmarkButton_->setStyleSheet(activeIndex_ == 2 ? kActiveStyle : kNormalStyle);
+    testsButton_->setStyleSheet(activeIndex_ == 3 ? kActiveStyle : kNormalStyle);
 }
 

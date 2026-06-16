@@ -20,13 +20,19 @@ public:
 
     void setEdges(const std::vector<VisualEdge>& edges);
     void setViewState(const AlgorithmViewState& state);
+    void setSourceTarget(int source, int target);
+    void setSelectionMode(int mode);
     void clearSelection();
     void selectEdge(const VisualEdge& edge);
     void refreshViewportItems();
     void setLargeGraphMode(bool enabled);
 
+    void handleNodeClick(int nodeId);
+    int selectionMode() const { return selectionMode_; }
+
 signals:
     void edgeSelected(const VisualEdge& edge);
+    void nodeSelected(int nodeId);
 
 private:
     void redraw();
@@ -43,7 +49,10 @@ private:
     AlgorithmViewState state_;
     std::optional<VisualEdge> selectedEdge_;
 
+    int sourceNode_ = 1;
+    int targetNode_ = 1;
+    int selectionMode_ = 0;
+
     bool autoFitPending_ = true;
     bool largeGraphMode_ = false;
 };
-

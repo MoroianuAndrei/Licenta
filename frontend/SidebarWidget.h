@@ -23,10 +23,10 @@ signals:
 private:
     void applyButtonStyles();
 
-    QPushButton* generateButton = nullptr;
-    QPushButton* loadRunButton = nullptr;
-    QPushButton* benchmarkButton = nullptr;
-    QPushButton* testsButton = nullptr;
+    QPushButton* generateButton_ = nullptr;
+    QPushButton* loadRunButton_ = nullptr;
+    QPushButton* benchmarkButton_ = nullptr;
+    QPushButton* testsButton_ = nullptr;
 
     int activeIndex_ = 1;
 

@@ -6,9 +6,9 @@
 struct AMCPEBCP_Result
 {
     double maxCapacity;
-
     double finalCost;
     std::vector<int> path;
+    int oracleCalls = 0;
 };
 
 class AMCPEBCP

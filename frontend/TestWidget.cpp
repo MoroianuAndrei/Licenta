@@ -31,14 +31,6 @@ void TestWidget::buildUi()
     title->setObjectName("PanelTitle");
     layout->addWidget(title);
 
-    auto* desc = new QLabel(
-        "Teste manuale pe exemplele din paper (Fig.1, Fig.5) + validare brute-force\n"
-        "pe 50 grafuri random. Verifica corectitudinea algoritmilor AMCMCPEP, AMCPEBCP si ParametricSearch."
-    );
-    desc->setObjectName("PanelContent");
-    desc->setWordWrap(true);
-    layout->addWidget(desc);
-
     runButton_ = new QPushButton("Run All Tests");
     runButton_->setObjectName("RunButton");
     layout->addWidget(runButton_);
@@ -87,7 +79,15 @@ void TestWidget::onRunClicked()
     {
         runAllManualTests();
         runAllValidationTests();
-    } catch (...) {}
+    }
+    catch (const std::exception& ex)
+    {
+        std::cout << "\nEROARE FATALA: " << ex.what() << "\n";
+    }
+    catch (...)
+    {
+        std::cout << "\nEROARE FATALA NECUNOSCUTA\n";
+    }
 
     std::cout.rdbuf(oldBuf);
 

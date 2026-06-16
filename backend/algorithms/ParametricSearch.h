@@ -9,6 +9,7 @@ struct ParametricResult
     double maxCapacity;
     double finalCost;
     std::vector<int> path;
+    int oracleCalls = 0;
 };
 
 class ParametricSearch
@@ -18,12 +19,11 @@ public:
 
 private:
     AMCMCPEP oracle;
+    int oracleCalls_ = 0;
 
     std::vector<double> buildSortedCriticalValues(const Graph& G, double zmin, double zmax);
 
-
     std::pair<double, double> phaseI(const Graph& G, double zmin, double zmax, double W);
-
 
     ParametricResult phaseII(const Graph& G, double zk, double zk1, double W);
 };

@@ -30,8 +30,6 @@ WIN32 MACOSX_BUNDLE
     frontend/TestWidget.h
     frontend/TestWidget.cpp
 
-    backend/core/node.h
-    backend/core/node.cpp
     backend/core/edge.h
     backend/core/edge.cpp
     backend/core/graph.h

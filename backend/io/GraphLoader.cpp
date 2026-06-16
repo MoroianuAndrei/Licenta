@@ -71,7 +71,7 @@ namespace
     }
 }
 
-Graph loadGraphFromCSV(const std::string& filename, CostModel costModel)
+Graph loadGraphFromCSV(const std::string& filename, CostModel costModel, int source, int target)
 {
     std::ifstream file(filename);
     if (!file.is_open())
@@ -146,7 +146,9 @@ Graph loadGraphFromCSV(const std::string& filename, CostModel costModel)
         throw std::runtime_error("Fisierul CSV nu contine arce.");
     }
 
-    Graph graph(maxNode, 1, maxNode);
+    const int actualSource = (source >= 1 && source <= maxNode) ? source : 1;
+    const int actualTarget = (target >= 1 && target <= maxNode) ? target : maxNode;
+    Graph graph(maxNode, actualSource, actualTarget);
 
     for (const CsvEdge& edge : edges)
     {
