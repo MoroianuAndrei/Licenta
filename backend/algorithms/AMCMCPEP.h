@@ -16,9 +16,9 @@ private:
 
     std::vector<double> S;
 
-    std::vector<bool>   permanent;
+    std::vector<bool> permanent;
 
-    std::vector<int>    p;
+    std::vector<int> p;
 
 
     std::vector<int> getPath(int sourceNode, int targetNode);

@@ -20,21 +20,21 @@ static void compareAMCMCPEPWithBruteForce(const Graph& G, double z, const std::s
     AMCMCPEP_Result alg = solver.solve(G, z);
     BruteForceResult bf = brute.solveAMCMCPEP(G, z);
 
-    std::cout << "\n  [Algoritm]\n";
-    std::cout << "  Fezabil:      " << (alg.isFeasible ? "DA" : "NU") << "\n";
+    std::cout << "\n [Algoritm]\n";
+    std::cout << " Fezabil: " << (alg.isFeasible ? "DA" : "NU") << "\n";
     if (alg.isFeasible)
     {
-        std::cout << "  Cost total:   " << alg.totalCost << "\n";
-        std::cout << "  Drum P*:      ";
+        std::cout << " Cost total: " << alg.totalCost << "\n";
+        std::cout << " Drum P*: ";
         printPath(alg.path);
     }
 
-    std::cout << "\n  [Brute-force]\n";
-    std::cout << "  Fezabil:      " << (bf.feasible ? "DA" : "NU") << "\n";
+    std::cout << "\n [Brute-force]\n";
+    std::cout << " Fezabil: " << (bf.feasible ? "DA" : "NU") << "\n";
     if (bf.feasible)
     {
-        std::cout << "  Cost total:   " << bf.totalCost << "\n";
-        std::cout << "  Drum optim:   ";
+        std::cout << " Cost total: " << bf.totalCost << "\n";
+        std::cout << " Drum optim: ";
         printPath(bf.path);
     }
 
@@ -42,7 +42,7 @@ static void compareAMCMCPEPWithBruteForce(const Graph& G, double z, const std::s
     bool sameCost = (!alg.isFeasible && !bf.feasible) ||
         (std::abs(alg.totalCost - bf.totalCost) < 1e-6);
 
-    std::cout << "\n  Verdict:      "
+    std::cout << "\n Verdict: "
         << ((sameFeasibility && sameCost) ? "CORECT" : "NECONCORDANTA")
         << "\n";
 }

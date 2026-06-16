@@ -56,16 +56,16 @@ private:
 
     SidebarWidget* sidebar_ = nullptr;
 
-    QStackedWidget* stackedWidget_       = nullptr;
-    QWidget*        loadRunPage_         = nullptr;
+    QStackedWidget* stackedWidget_ = nullptr;
+    QWidget* loadRunPage_ = nullptr;
     GenerateGraphWidget* generateGraphWidget_ = nullptr;
-    BenchmarkWidget*     benchmarkWidget_     = nullptr;
-    TestWidget*          testWidget_          = nullptr;
+    BenchmarkWidget* benchmarkWidget_ = nullptr;
+    TestWidget* testWidget_ = nullptr;
 
-    ControlPanelWidget* controls_     = nullptr;
-    GraphWidget*        graphWidget_  = nullptr;
-    EdgeDetailsWidget*  edgeDetails_  = nullptr;
-    ResultWidget*       resultWidget_ = nullptr;
+    ControlPanelWidget* controls_ = nullptr;
+    GraphWidget* graphWidget_ = nullptr;
+    EdgeDetailsWidget* edgeDetails_ = nullptr;
+    ResultWidget* resultWidget_ = nullptr;
 
     std::optional<Graph> currentGraph_;
     QString lastLoadedGraphFileName_;

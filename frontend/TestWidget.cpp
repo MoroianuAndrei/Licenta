@@ -59,7 +59,8 @@ void TestWidget::buildUi()
 void TestWidget::applyStyle()
 {
     setStyleSheet(R"(
-        #RunButton {
+        #RunButton
+        {
             background-color: #1a4a8a;
             border: 1px solid #3a7bd5;
             border-radius: 10px;
@@ -82,7 +83,8 @@ void TestWidget::onRunClicked()
     std::ostringstream oss;
     std::streambuf* oldBuf = std::cout.rdbuf(oss.rdbuf());
 
-    try {
+    try
+    {
         runAllManualTests();
         runAllValidationTests();
     } catch (...) {}
@@ -93,10 +95,10 @@ void TestWidget::onRunClicked()
     displayOutput(output);
 
     int correct = output.count("CORECT");
-    int wrong   = output.count("DIFERIT") + output.count("NECONCORDANTA") + output.count("GRESIT");
+    int wrong = output.count("DIFERIT") + output.count("NECONCORDANTA") + output.count("GRESIT");
 
     summaryLabel_->setText(
-        QString("Rezultat: %1 corecte  |  %2 erori").arg(correct).arg(wrong)
+        QString("Rezultat: %1 corecte |  %2 erori").arg(correct).arg(wrong)
     );
 
     runButton_->setEnabled(true);
@@ -112,7 +114,8 @@ void TestWidget::displayOutput(const QString& text)
     const QColor colorRed("#e74c3c");
     const QColor colorCyan("#7dd3fc");
 
-    for (const QString& line : text.split('\n')) {
+    for (const QString& line : text.split('\n'))
+    {
         QTextCharFormat fmt;
         fmt.setFont(mono);
 

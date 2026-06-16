@@ -16,7 +16,8 @@ AMCPEBCP_Result AMCPEBCP::solve(const Graph& G, double W)
     if (zmin < 0) zmin = 0;
 
 
-    if (zmin >= zmax) {
+    if (zmin >= zmax)
+    {
         auto [cap, path] = G.findMCPWithPath(false);
         if (!path.empty())
             return { (double)zmin, 0.0, path };
@@ -31,8 +32,8 @@ AMCPEBCP_Result AMCPEBCP::solve(const Graph& G, double W)
     if (resMax.isFeasible && resMax.totalCost <= W)
         return { (double)zmax, resMax.totalCost, resMax.path };
 
-    double           bestZ = (double)zmin;
-    double           bestCost = 0.0;
+    double bestZ = (double)zmin;
+    double bestCost = 0.0;
     std::vector<int> bestPath;
 
     AMCMCPEP_Result resMin = solver.solve(G, zmin);

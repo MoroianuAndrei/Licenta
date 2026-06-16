@@ -25,11 +25,11 @@ Edge::Edge(int from, int to, double capacity, double max_capacity, bool isNew,
     u = [](double) -> double { return 0.0; };
 }
 
-int    Edge::getFrom()        const { return from; }
-int    Edge::getTo()          const { return to; }
-double Edge::getCapacity()    const { return c; }
+int Edge::getFrom() const { return from; }
+int Edge::getTo() const { return to; }
+double Edge::getCapacity() const { return c; }
 double Edge::getMaxCapacity() const { return c_hat; }
-bool   Edge::isNew()          const { return isNewEdge; }
+bool Edge::isNew() const { return isNewEdge; }
 
 void Edge::setCapacity(double newCapacity)
 {

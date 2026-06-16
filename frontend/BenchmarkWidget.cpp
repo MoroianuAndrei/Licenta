@@ -153,43 +153,49 @@ void BenchmarkWidget::buildUi()
     rootLayout->addWidget(logBox_);
 
 
-    connect(runButton_,  &QPushButton::clicked, this, &BenchmarkWidget::onRunClicked);
+    connect(runButton_, &QPushButton::clicked, this, &BenchmarkWidget::onRunClicked);
     connect(saveButton_, &QPushButton::clicked, this, &BenchmarkWidget::onSaveClicked);
 }
 
 void BenchmarkWidget::applyStyle()
 {
     setStyleSheet(R"(
-        QGroupBox {
+        QGroupBox
+        {
             border: 1px solid #27446f;
             border-radius: 10px;
             margin-top: 8px;
             padding: 8px;
             color: #e8f1ff;
         }
-        QGroupBox::title {
+        QGroupBox::title
+        {
             subcontrol-origin: margin;
             left: 10px;
             color: #7dd3fc;
         }
-        QTableWidget {
+        QTableWidget
+        {
             background-color: #060b17;
             border: 1px solid #233b61;
             border-radius: 8px;
             color: #cfe4ff;
             gridline-color: #1a2e4a;
         }
-        QTableWidget::item:alternate {
+        QTableWidget::item:alternate
+        {
             background-color: #0a1628;
         }
-        QHeaderView::section {
+        QHeaderView::section
+        {
             background-color: #0d1630;
             color: #7dd3fc;
             border: 1px solid #27446f;
             padding: 4px;
             font-weight: bold;
         }
-        #RunButton {
+        #RunButton
+        {
             background-color: #1a4a8a;
             border: 1px solid #3a7bd5;
             border-radius: 10px;
@@ -198,10 +204,12 @@ void BenchmarkWidget::applyStyle()
             font-weight: 700;
             font-size: 13px;
         }
-        #RunButton:hover {
+        #RunButton:hover
+        {
             background-color: #2560b0;
         }
-        #RunButton:disabled {
+        #RunButton:disabled
+        {
             background-color: #0d1630;
             color: #555;
         }
@@ -218,7 +226,8 @@ void BenchmarkWidget::addTableRow(const BenchmarkEntry& e, int row)
         auto* item = new QTableWidgetItem(text);
         item->setTextAlignment(Qt::AlignCenter);
         item->setForeground(fg);
-        if (bold) {
+        if (bold)
+        {
             QFont f = item->font();
             f.setBold(true);
             item->setFont(f);
@@ -238,13 +247,13 @@ void BenchmarkWidget::addTableRow(const BenchmarkEntry& e, int row)
 
     bool alg4Wins = (e.parametric_time_ms < e.amcpebcp_time_ms);
     QColor paramColor = alg4Wins ? QColor("#2ecc71") : QColor("#cfe4ff");
-    addItem(6, QString::number(e.parametric_time_ms,  'f', 2), paramColor);
+    addItem(6, QString::number(e.parametric_time_ms, 'f', 2), paramColor);
     addItem(7, QString::number(e.parametric_oracle_calls), paramColor, alg4Wins);
     addItem(8, QString::number(e.parametric_result_z, 'f', 4));
 
 
-    QString winner   = alg4Wins ? "Alg4 (Param)" : "Alg3 (AMCPEBCP)";
-    QColor  winColor = alg4Wins ? QColor("#2ecc71") : QColor("#7dd3fc");
+    QString winner = alg4Wins ? "Alg4 (Param)" : "Alg3 (AMCPEBCP)";
+    QColor winColor = alg4Wins ? QColor("#2ecc71") : QColor("#7dd3fc");
     addItem(9, winner, winColor, true);
 
 
@@ -295,23 +304,23 @@ void BenchmarkWidget::onRunClicked()
     progressBar_->setValue(0);
     setRunning(true);
 
-    double W           = budgetInput_->value();
-    int    maxCapLimit = maxCapLimitInput_->value();
+    double W = budgetInput_->value();
+    int maxCapLimit = maxCapLimitInput_->value();
 
     logBox_->append(QString("Pornire benchmark: %1 dimensiuni, W=%2, MaxCapLimit=%3")
         .arg(sizes.size()).arg(W).arg(maxCapLimit));
 
     workerThread_ = new QThread(this);
-    auto* worker  = new BenchmarkWorker(sizes, W, maxCapLimit, 42);
+    auto* worker = new BenchmarkWorker(sizes, W, maxCapLimit, 42);
     worker->moveToThread(workerThread_);
 
-    connect(workerThread_, &QThread::started,  worker, &BenchmarkWorker::run);
+    connect(workerThread_, &QThread::started, worker, &BenchmarkWorker::run);
     connect(worker, &BenchmarkWorker::progressUpdate, this, &BenchmarkWidget::onProgressUpdate);
-    connect(worker, &BenchmarkWorker::entryReady,     this, &BenchmarkWidget::onEntryReady);
-    connect(worker, &BenchmarkWorker::finished,       this, &BenchmarkWidget::onFinished);
-    connect(worker, &BenchmarkWorker::errorOccurred,  this, &BenchmarkWidget::onError);
+    connect(worker, &BenchmarkWorker::entryReady, this, &BenchmarkWidget::onEntryReady);
+    connect(worker, &BenchmarkWorker::finished, this, &BenchmarkWidget::onFinished);
+    connect(worker, &BenchmarkWorker::errorOccurred, this, &BenchmarkWidget::onError);
     connect(worker, &BenchmarkWorker::finished, workerThread_, &QThread::quit);
-    connect(workerThread_, &QThread::finished,  worker, &QObject::deleteLater);
+    connect(workerThread_, &QThread::finished, worker, &QObject::deleteLater);
 
     workerThread_->start();
 }
@@ -333,10 +342,10 @@ void BenchmarkWidget::onEntryReady(BenchmarkEntry entry)
     logBox_->append(
         QString("n=%1 | AMCPEBCP: %2ms (%3 apeluri, z*=%4) | Param: %5ms (%6 apeluri, z*=%7) | Castigator: %8 | dz=%9")
         .arg(entry.nodes)
-        .arg(entry.amcpebcp_time_ms,    0, 'f', 2)
+        .arg(entry.amcpebcp_time_ms, 0, 'f', 2)
         .arg(entry.amcpebcp_oracle_calls)
-        .arg(entry.amcpebcp_result_z,   0, 'f', 4)
-        .arg(entry.parametric_time_ms,  0, 'f', 2)
+        .arg(entry.amcpebcp_result_z, 0, 'f', 4)
+        .arg(entry.parametric_time_ms, 0, 'f', 2)
         .arg(entry.parametric_oracle_calls)
         .arg(entry.parametric_result_z, 0, 'f', 4)
         .arg(alg4Wins ? "Alg4" : "Alg3")

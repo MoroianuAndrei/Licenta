@@ -4,20 +4,22 @@
 #include "AMCMCPEP.h"
 #include <vector>
 
-struct ParametricResult {
-    double           maxCapacity;
-    double           finalCost;
+struct ParametricResult
+{
+    double maxCapacity;
+    double finalCost;
     std::vector<int> path;
 };
 
-class ParametricSearch {
+class ParametricSearch
+{
 public:
     ParametricResult solve(const Graph& G, double W);
 
 private:
     AMCMCPEP oracle;
 
-    std::vector<double> buildSortedCriticalValues(const Graph& G, double zmax);
+    std::vector<double> buildSortedCriticalValues(const Graph& G, double zmin, double zmax);
 
 
     std::pair<double, double> phaseI(const Graph& G, double zmin, double zmax, double W);

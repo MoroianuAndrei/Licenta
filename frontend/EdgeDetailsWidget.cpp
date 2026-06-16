@@ -49,15 +49,19 @@ QString EdgeDetailsWidget::costDetails(const VisualEdge& edge) const
 {
     const double z = state_.hasResult ? state_.resultZ : state_.inputValue;
 
-    if (state_.algorithm == "AMCMCPEP") {
-        const double d    = std::abs(edge.to - edge.from);
+    if (state_.algorithm == "AMCMCPEP")
+    {
+        const double d = std::abs(edge.to - edge.from);
         double b = 0.0, u = 0.0;
 
-        if (!edge.isNew) {
+        if (!edge.isNew)
+        {
             const double diff = std::max(0.0, z - edge.capacity);
             b = 10.0 * d * diff;
             u = d * diff * diff;
-        } else {
+        }
+        else
+        {
             b = 4.0 * d * z;
             const double diff = z - 10.0;
             u = d * diff * diff;
@@ -71,7 +75,8 @@ QString EdgeDetailsWidget::costDetails(const VisualEdge& edge) const
         ).arg(formatNumber(z), formatNumber(b), formatNumber(u));
     }
 
-    if (state_.algorithm == "Parametric Search") {
+    if (state_.algorithm == "Parametric Search")
+    {
         const double linearCost = edge.rate * std::max(0.0, z - edge.capacity);
         return QString(
             "<hr>"
@@ -90,7 +95,8 @@ QString EdgeDetailsWidget::costDetails(const VisualEdge& edge) const
 
 void EdgeDetailsWidget::render()
 {
-    if (!selectedEdge_) {
+    if (!selectedEdge_)
+    {
         content_->setText(
             "<span style='color:#b8c7dc'>Selecteaza o muchie din graf pentru a vedea detaliile.</span><br><br>"
             "<b>Legenda:</b><br>"

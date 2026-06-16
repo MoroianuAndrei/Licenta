@@ -44,15 +44,15 @@ void MainWindow::buildUi()
     auto* central = new QWidget(this);
     setCentralWidget(central);
 
-    sidebar_      = new SidebarWidget(this);
+    sidebar_ = new SidebarWidget(this);
     stackedWidget_ = new QStackedWidget(this);
 
     generateGraphWidget_ = new GenerateGraphWidget(this);
-    benchmarkWidget_     = new BenchmarkWidget(this);
-    testWidget_          = new TestWidget(this);
+    benchmarkWidget_ = new BenchmarkWidget(this);
+    testWidget_ = new TestWidget(this);
 
     loadRunPage_ = new QWidget(this);
-    controls_    = new ControlPanelWidget(loadRunPage_);
+    controls_ = new ControlPanelWidget(loadRunPage_);
     graphWidget_ = new GraphWidget(loadRunPage_);
     edgeDetails_ = new EdgeDetailsWidget(loadRunPage_);
     resultWidget_= new ResultWidget(loadRunPage_);
@@ -119,23 +119,27 @@ void MainWindow::buildUi()
 void MainWindow::applyStyle()
 {
     setStyleSheet(R"(
-        QMainWindow {
+        QMainWindow
+        {
             background-color: #070b18;
         }
 
-        QWidget {
+        QWidget
+        {
             color: #e8f1ff;
             font-family: "Segoe UI";
             font-size: 13px;
         }
 
-        #Panel, #SidebarWidget {
+        #Panel, #SidebarWidget
+        {
             background-color: #0d1630;
             border: 1px solid #27446f;
             border-radius: 18px;
         }
 
-        #SidebarWidget {
+        #SidebarWidget
+        {
             background-color: qlineargradient(
                 x1:0,y1:0,x2:1,y2:1,
                 stop:0 #09142c,
@@ -143,21 +147,23 @@ void MainWindow::applyStyle()
             );
         }
 
-        #SidebarTitle    { color: #ffffff; font-size: 24px; font-weight: 800; }
-        #SidebarItem     { color: #dbeafe; background-color: rgba(255,255,255,0.06); border-radius: 10px; padding-left: 10px; }
+        #SidebarTitle { color: #ffffff; font-size: 24px; font-weight: 800; }
+        #SidebarItem { color: #dbeafe; background-color: rgba(255,255,255,0.06); border-radius: 10px; padding-left: 10px; }
         #SidebarItem:hover { background-color: rgba(125, 211, 252, 0.18); }
-        #SidebarFooter   { color: #89a7c7; font-size: 11px; }
-        #PanelTitle      { color: #7dd3fc; font-size: 17px; font-weight: 800; }
-        #PanelContent    { color: #d9e7ff; }
+        #SidebarFooter { color: #89a7c7; font-size: 11px; }
+        #PanelTitle { color: #7dd3fc; font-size: 17px; font-weight: 800; }
+        #PanelContent { color: #d9e7ff; }
 
-        #LogBox, QTextEdit {
+        #LogBox, QTextEdit
+        {
             background-color: #060b17;
             border: 1px solid #233b61;
             border-radius: 10px;
             color: #cfe4ff;
         }
 
-        QComboBox, QDoubleSpinBox, QSpinBox {
+        QComboBox, QDoubleSpinBox, QSpinBox
+        {
             background-color: #111c36;
             border: 1px solid #2d4d7d;
             border-radius: 9px;
@@ -166,7 +172,8 @@ void MainWindow::applyStyle()
             color: #ffffff;
         }
 
-        QPushButton {
+        QPushButton
+        {
             background-color: #13213f;
             border: 1px solid #335b91;
             border-radius: 10px;
@@ -175,7 +182,7 @@ void MainWindow::applyStyle()
             font-weight: 600;
         }
 
-        QPushButton:hover   { background-color: #1d3a6a; border-color: #64b5ff; }
+        QPushButton:hover { background-color: #1d3a6a; border-color: #64b5ff; }
         QPushButton:pressed { background-color: #0f2a50; }
     )");
 }
@@ -184,8 +191,10 @@ QString MainWindow::defaultDataPath() const
 {
     QDir dir(QCoreApplication::applicationDirPath());
 
-    for (int i = 0; i < 5; ++i) {
-        if (dir.exists("data")) {
+    for (int i = 0; i < 5; ++i)
+    {
+        if (dir.exists("data"))
+        {
             dir.cd("data");
             return dir.absolutePath();
         }
@@ -208,7 +217,8 @@ std::vector<VisualEdge> MainWindow::loadVisualEdgesFromCSV(const QString& fileNa
     std::vector<VisualEdge> edges;
     int lineNumber = 1;
 
-    while (std::getline(file, line)) {
+    while (std::getline(file, line))
+    {
         ++lineNumber;
         if (line.empty()) continue;
 
@@ -225,12 +235,12 @@ std::vector<VisualEdge> MainWindow::loadVisualEdgesFromCSV(const QString& fileNa
             );
 
         VisualEdge edge;
-        edge.from        = std::stoi(values[0]);
-        edge.to          = std::stoi(values[1]);
-        edge.capacity    = std::stod(values[2]);
+        edge.from = std::stoi(values[0]);
+        edge.to = std::stoi(values[1]);
+        edge.capacity = std::stod(values[2]);
         edge.maxCapacity = std::stod(values[3]);
-        edge.isNew       = (std::stoi(values[4]) != 0);
-        edge.rate        = std::stod(values[5]);
+        edge.isNew = (std::stoi(values[4]) != 0);
+        edge.rate = std::stod(values[5]);
 
         edges.push_back(edge);
     }
@@ -243,7 +253,7 @@ void MainWindow::loadGraphFromFile(const QString& fileName)
     lastLoadedGraphFileName_ = fileName;
 
     currentGraph_ = loadGraphFromCSV(fileName.toStdString(), CostModel::ArticleGeneral);
-    visualEdges_  = loadVisualEdgesFromCSV(fileName);
+    visualEdges_ = loadVisualEdgesFromCSV(fileName);
 
     resetResultState();
     refreshViewState();
@@ -264,12 +274,12 @@ void MainWindow::loadGraphFromFile(const QString& fileName)
 void MainWindow::resetResultState()
 {
     viewState_.hasResult = false;
-    viewState_.resultZ   = 0.0;
+    viewState_.resultZ = 0.0;
     viewState_.finalCost = 0.0;
     viewState_.path.clear();
 
-    if (graphWidget_)  graphWidget_->clearSelection();
-    if (edgeDetails_)  edgeDetails_->clearEdge();
+    if (graphWidget_) graphWidget_->clearSelection();
+    if (edgeDetails_) edgeDetails_->clearEdge();
     if (resultWidget_) resultWidget_->clearResult();
 }
 
@@ -278,7 +288,7 @@ void MainWindow::refreshViewState()
     if (!controls_ || !graphWidget_ || !edgeDetails_)
         return;
 
-    viewState_.algorithm  = controls_->currentAlgorithm();
+    viewState_.algorithm = controls_->currentAlgorithm();
     viewState_.inputValue = controls_->parameterValue();
 
     graphWidget_->setViewState(viewState_);
@@ -297,9 +307,9 @@ void MainWindow::runMCP()
     auto [mcpCap, path] = currentGraph_->findMCPWithPath(false);
 
     viewState_.hasResult = !path.empty();
-    viewState_.resultZ   = 0.0;
+    viewState_.resultZ = 0.0;
     viewState_.finalCost = 0.0;
-    viewState_.path      = path;
+    viewState_.path = path;
 
     resultWidget_->appendLog(QString("Capacitate MCP curenta: %1").arg(mcpCap));
     resultWidget_->appendLog("Drum: " + formatPath(path));
@@ -313,9 +323,9 @@ void MainWindow::runAMCMCPEP(double z)
     const auto result = solver.solve(*currentGraph_, z);
 
     viewState_.hasResult = result.isFeasible;
-    viewState_.resultZ   = z;
+    viewState_.resultZ = z;
     viewState_.finalCost = result.totalCost;
-    viewState_.path      = result.path;
+    viewState_.path = result.path;
 
     resultWidget_->appendLog(QString("Desired z: %1").arg(z));
     resultWidget_->appendLog(QString("Feasible: %1").arg(result.isFeasible ? "Yes" : "No"));
@@ -333,9 +343,9 @@ void MainWindow::runAMCPEBCP(double W)
     const bool feasible = !result.path.empty();
 
     viewState_.hasResult = feasible;
-    viewState_.resultZ   = result.maxCapacity;
+    viewState_.resultZ = result.maxCapacity;
     viewState_.finalCost = result.finalCost;
-    viewState_.path      = result.path;
+    viewState_.path = result.path;
 
     resultWidget_->appendLog(QString("Budget W: %1").arg(W));
     resultWidget_->appendLog(QString("Best z*: %1").arg(result.maxCapacity));
@@ -363,9 +373,9 @@ void MainWindow::runParametricSearch(double W)
     const bool feasible = !result.path.empty();
 
     viewState_.hasResult = feasible;
-    viewState_.resultZ   = result.maxCapacity;
+    viewState_.resultZ = result.maxCapacity;
     viewState_.finalCost = result.finalCost;
-    viewState_.path      = result.path;
+    viewState_.path = result.path;
 
     resultWidget_->appendLog(QString("Budget W: %1").arg(W));
     resultWidget_->appendLog(QString("Best z*: %1").arg(result.maxCapacity));
@@ -389,32 +399,37 @@ void MainWindow::onLoadGraphClicked()
     if (fileName.isEmpty())
         return;
 
-    try {
+    try
+    {
         lastPath = QFileInfo(fileName).absolutePath();
         loadGraphFromFile(fileName);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         QMessageBox::critical(this, "Error", e.what());
     }
 }
 
 void MainWindow::onGeneratedGraph(const QString& filePath)
 {
-    try {
+    try
+    {
         stackedWidget_->setCurrentWidget(loadRunPage_);
         sidebar_->setActiveButton(1);
         loadGraphFromFile(filePath);
         resultWidget_->appendLog("Generated CSV loaded automatically.");
         logSeparator();
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         QMessageBox::critical(this, "Generation error", e.what());
     }
 }
 
 void MainWindow::onRunClicked()
 {
-    if (!currentGraph_) {
+    if (!currentGraph_)
+    {
         QMessageBox::warning(this, "Warning", "Please load a graph first.");
         return;
     }
@@ -422,28 +437,31 @@ void MainWindow::onRunClicked()
     resetResultState();
     refreshViewState();
 
-    const QString algo  = controls_->currentAlgorithm();
-    const double  input = controls_->parameterValue();
+    const QString algo = controls_->currentAlgorithm();
+    const double input = controls_->parameterValue();
 
     if (algo == "MCP")
         resultWidget_->appendLog("Running MCP");
-    else {
+    else
+    {
         const QString paramName = (algo == "AMCMCPEP") ? "z" : "W";
         resultWidget_->appendLog(
             QString("Running %1 with %2=%3").arg(algo, paramName).arg(input)
         );
     }
 
-    try {
-        if      (algo == "MCP")               runMCP();
-        else if (algo == "AMCMCPEP")          runAMCMCPEP(input);
-        else if (algo == "AMCPEBCP")          runAMCPEBCP(input);
+    try
+    {
+        if (algo == "MCP") runMCP();
+        else if (algo == "AMCMCPEP") runAMCMCPEP(input);
+        else if (algo == "AMCPEBCP") runAMCPEBCP(input);
         else if (algo == "Parametric Search") runParametricSearch(input);
 
         refreshViewState();
         logSeparator();
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         resultWidget_->appendLog(QString("Error executing algorithm: %1").arg(e.what()));
         logSeparator();
     }

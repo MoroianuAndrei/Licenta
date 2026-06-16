@@ -4,11 +4,11 @@
 class Edge
 {
 private:
-    int    from;
-    int    to;
+    int from;
+    int to;
     double c;
     double c_hat;
-    bool   isNewEdge;
+    bool isNewEdge;
     double linearRate;
 
     std::function<double(double)> u;
@@ -22,16 +22,16 @@ public:
     Edge(int from, int to, double capacity, double max_capacity, bool isNew,
         double rate);
 
-    int    getFrom()        const;
-    int    getTo()          const;
-    double getCapacity()    const;
+    int getFrom() const;
+    int getTo() const;
+    double getCapacity() const;
     double getMaxCapacity() const;
-    bool   isNew()          const;
+    bool isNew() const;
 
     void setCapacity(double newCapacity);
     void setMaxCapacity(double newMaxCapacity);
 
-    double getSumCost(double z)  const;
-    double getMaxCost(double z)  const;
-    double getLinearRate()       const;
+    double getSumCost(double z) const;
+    double getMaxCost(double z) const;
+    double getLinearRate() const;
 };

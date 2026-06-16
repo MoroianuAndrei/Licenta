@@ -12,17 +12,17 @@
 static Graph generateLinearGraph(int nodes, int maxCapacityLimit, unsigned int seed)
 {
     RandomGraphParams params;
-    params.nodes              = nodes;
-    params.paths              = std::max(2, nodes / 5);
-    params.cycles             = std::max(1, nodes / 10);
+    params.nodes = nodes;
+    params.paths = std::max(2, nodes / 5);
+    params.cycles = std::max(1, nodes / 10);
     params.extraArcProbability = 0.05;
-    params.minCapacity        = 1;
-    params.maxCapacity        = std::max(2, maxCapacityLimit / 3);
-    params.maxCapacityLimit   = maxCapacityLimit;
-    params.minRate            = 1;
-    params.maxRate            = 10;
-    params.newArcProbability  = 0.10;
-    params.seed               = seed;
+    params.minCapacity = 1;
+    params.maxCapacity = std::max(2, maxCapacityLimit / 3);
+    params.maxCapacityLimit = maxCapacityLimit;
+    params.minRate = 1;
+    params.maxRate = 10;
+    params.newArcProbability = 0.10;
+    params.seed = seed;
 
     const std::string tmpFile = "benchmark_tmp.csv";
 
@@ -39,9 +39,9 @@ BenchmarkEntry PerformanceTest::runSingle(int nodes, double W, int maxCapacityLi
 {
     BenchmarkEntry entry{};
     entry.nodes = nodes;
-    entry.W     = W;
+    entry.W = W;
 
-    Graph G   = generateLinearGraph(nodes, maxCapacityLimit, seed);
+    Graph G = generateLinearGraph(nodes, maxCapacityLimit, seed);
     entry.edges = (int)G.getAllEdges().size();
 
     {
@@ -52,8 +52,8 @@ BenchmarkEntry PerformanceTest::runSingle(int nodes, double W, int maxCapacityLi
 
         auto t1 = std::chrono::high_resolution_clock::now();
 
-        entry.amcpebcp_time_ms     = std::chrono::duration<double, std::milli>(t1 - t0).count();
-        entry.amcpebcp_result_z    = res.maxCapacity;
+        entry.amcpebcp_time_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        entry.amcpebcp_result_z = res.maxCapacity;
         entry.amcpebcp_result_cost = res.finalCost;
 
         double zmin = G.findMCP(false);
@@ -72,8 +72,8 @@ BenchmarkEntry PerformanceTest::runSingle(int nodes, double W, int maxCapacityLi
 
         auto t1 = std::chrono::high_resolution_clock::now();
 
-        entry.parametric_time_ms     = std::chrono::duration<double, std::milli>(t1 - t0).count();
-        entry.parametric_result_z    = res.maxCapacity;
+        entry.parametric_time_ms = std::chrono::duration<double, std::milli>(t1 - t0).count();
+        entry.parametric_result_z = res.maxCapacity;
         entry.parametric_result_cost = res.finalCost;
         entry.parametric_oracle_calls = nodes * (nodes - 1) / 2;
     }
@@ -92,19 +92,20 @@ void PerformanceTest::saveToCSV(const std::vector<BenchmarkEntry>& results, cons
       << "parametric_time_ms,parametric_oracle_calls,parametric_z,parametric_cost,"
       << "z_difference\n";
 
-    for (const auto& e : results) {
-        f << e.nodes                  << ","
-          << e.edges                  << ","
-          << e.W                      << ","
-          << e.amcpebcp_time_ms       << ","
-          << e.amcpebcp_oracle_calls  << ","
-          << e.amcpebcp_result_z      << ","
-          << e.amcpebcp_result_cost   << ","
-          << e.parametric_time_ms     << ","
+    for (const auto& e : results)
+    {
+        f << e.nodes << ","
+          << e.edges << ","
+          << e.W << ","
+          << e.amcpebcp_time_ms << ","
+          << e.amcpebcp_oracle_calls << ","
+          << e.amcpebcp_result_z << ","
+          << e.amcpebcp_result_cost << ","
+          << e.parametric_time_ms << ","
           << e.parametric_oracle_calls<< ","
-          << e.parametric_result_z    << ","
+          << e.parametric_result_z << ","
           << e.parametric_result_cost << ","
-          << e.z_difference           << "\n";
+          << e.z_difference << "\n";
     }
 }
 

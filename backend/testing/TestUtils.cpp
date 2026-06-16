@@ -7,7 +7,7 @@ void printSeparator(const std::string& title)
 {
     std::cout << "\n";
     std::cout << "============================================================\n";
-    std::cout << "  " << title << "\n";
+    std::cout << " " << title << "\n";
     std::cout << "============================================================\n";
 }
 
@@ -35,24 +35,24 @@ void printResult(const std::string& label,
     double expected_cost,
     const std::string& expected_path)
 {
-    std::cout << "\n  [" << label << "]\n";
-    std::cout << "  Fezabil:      " << (feasible ? "DA" : "NU") << "\n";
+    std::cout << "\n [" << label << "]\n";
+    std::cout << " Fezabil: " << (feasible ? "DA" : "NU") << "\n";
 
     if (feasible)
     {
-        std::cout << "  Cost total:   " << std::fixed << std::setprecision(4) << cost << "\n";
-        std::cout << "  Drum P*:      ";
+        std::cout << " Cost total: " << std::fixed << std::setprecision(4) << cost << "\n";
+        std::cout << " Drum P*: ";
         printPath(path);
 
         if (expected_cost >= 0.0)
         {
-            std::cout << "  Asteptat:     cost = " << expected_cost;
+            std::cout << " Asteptat: cost = " << expected_cost;
             if (!expected_path.empty())
                 std::cout << ", drum = " << expected_path;
             std::cout << "\n";
         }
 
         bool ok = (expected_cost < 0.0) || (std::abs(cost - expected_cost) < 0.01);
-        std::cout << "  Status:       " << (ok ? "CORECT" : "DIFERIT DE ASTEPTAT") << "\n";
+        std::cout << " Status: " << (ok ? "CORECT" : "DIFERIT DE ASTEPTAT") << "\n";
     }
 }

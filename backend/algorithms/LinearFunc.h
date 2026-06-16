@@ -1,7 +1,8 @@
 #pragma once
 #include <limits>
 
-struct LinearFunc {
+struct LinearFunc
+{
     double r;
     double q;
 

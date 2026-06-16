@@ -15,10 +15,11 @@ ResultWidget::ResultWidget(QWidget* parent)
     title->setObjectName("PanelTitle");
 
     statusLabel_ = new QLabel("Status: asteapta rulare", this);
-    pathLabel_   = new QLabel("Ruta optima: -", this);
-    costLabel_   = new QLabel("Cost final: -", this);
+    pathLabel_ = new QLabel("Ruta optima: -", this);
+    costLabel_ = new QLabel("Cost final: -", this);
 
-    for (auto* label : {statusLabel_, pathLabel_, costLabel_}) {
+    for (auto* label : {statusLabel_, pathLabel_, costLabel_})
+    {
         label->setObjectName("PanelContent");
         label->setWordWrap(true);
     }
@@ -32,11 +33,11 @@ ResultWidget::ResultWidget(QWidget* parent)
     layout->setContentsMargins(16, 16, 16, 16);
     layout->setHorizontalSpacing(18);
     layout->setVerticalSpacing(8);
-    layout->addWidget(title,       0, 0, 1, 2);
-    layout->addWidget(pathLabel_,  1, 0);
-    layout->addWidget(costLabel_,  2, 0);
+    layout->addWidget(title, 0, 0, 1, 2);
+    layout->addWidget(pathLabel_, 1, 0);
+    layout->addWidget(costLabel_, 2, 0);
     layout->addWidget(statusLabel_,3, 0);
-    layout->addWidget(log_,        1, 1, 3, 1);
+    layout->addWidget(log_, 1, 1, 3, 1);
     layout->setColumnStretch(0, 1);
     layout->setColumnStretch(1, 1);
 }
@@ -53,7 +54,7 @@ void ResultWidget::setResult(const QString& algorithm, const std::vector<int>& p
 {
     Q_UNUSED(algorithm);
     pathLabel_->setText("Ruta optima: " + formatPath(path));
-    costLabel_->setText(QString("z*: %1   |   Cost final: %2")
+    costLabel_->setText(QString("z*: %1 |   Cost final: %2")
         .arg(formatNumber(zValue), formatNumber(finalCost)));
     statusLabel_->setText(feasible ? "Status: solutie gasita"
                                    : "Status: problema infezabila / fara drum");

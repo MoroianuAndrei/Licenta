@@ -28,7 +28,7 @@
 namespace
 {
     constexpr double kBaseNodeRadius = 22.0;
-    constexpr double kBaseArrowSize  = 13.0;
+    constexpr double kBaseArrowSize = 13.0;
     constexpr double kPi = 3.14159265358979323846;
 
     bool sameEdge(const VisualEdge& a, const VisualEdge& b)
@@ -72,7 +72,8 @@ namespace
     protected:
         void wheelEvent(QWheelEvent* event) override
         {
-            if (event->modifiers() & Qt::ControlModifier) {
+            if (event->modifiers() & Qt::ControlModifier)
+            {
                 const double zoomFactor = event->angleDelta().y() > 0 ? 1.15 : 1.0 / 1.15;
                 scale(zoomFactor, zoomFactor);
                 if (owner_) owner_->refreshViewportItems();
@@ -84,8 +85,9 @@ namespace
 
         void mousePressEvent(QMouseEvent* event) override
         {
-            if (event->button() == Qt::MiddleButton) {
-                isPanning_    = true;
+            if (event->button() == Qt::MiddleButton)
+            {
+                isPanning_ = true;
                 lastPanPoint_ = event->pos();
                 setCursor(Qt::ClosedHandCursor);
                 event->accept();
@@ -96,7 +98,8 @@ namespace
 
         void mouseMoveEvent(QMouseEvent* event) override
         {
-            if (isPanning_) {
+            if (isPanning_)
+            {
                 const QPoint delta = event->pos() - lastPanPoint_;
                 lastPanPoint_ = event->pos();
                 horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
@@ -109,7 +112,8 @@ namespace
 
         void mouseReleaseEvent(QMouseEvent* event) override
         {
-            if (event->button() == Qt::MiddleButton && isPanning_) {
+            if (event->button() == Qt::MiddleButton && isPanning_)
+            {
                 isPanning_ = false;
                 setCursor(Qt::ArrowCursor);
                 event->accept();
@@ -119,9 +123,9 @@ namespace
         }
 
     private:
-        GraphWidget* owner_       = nullptr;
-        bool         isPanning_   = false;
-        QPoint       lastPanPoint_;
+        GraphWidget* owner_ = nullptr;
+        bool isPanning_ = false;
+        QPoint lastPanPoint_;
     };
 
     class EdgeItem final : public QGraphicsPathItem
@@ -145,7 +149,7 @@ namespace
 
     private:
         GraphWidget* owner_ = nullptr;
-        VisualEdge   edge_;
+        VisualEdge edge_;
     };
 }
 
@@ -156,7 +160,7 @@ GraphWidget::GraphWidget(QWidget* parent)
     setObjectName("Panel");
 
     scene_ = new QGraphicsScene(this);
-    view_  = new ZoomableGraphicsView(scene_, this, this);
+    view_ = new ZoomableGraphicsView(scene_, this, this);
     view_->setRenderHint(QPainter::Antialiasing);
     view_->setBackgroundBrush(QBrush(QColor(8, 13, 30)));
     view_->setFrameShape(QFrame::NoFrame);
@@ -182,7 +186,7 @@ void GraphWidget::setViewState(const AlgorithmViewState& state)
     redraw();
 }
 
-void GraphWidget::clearSelection()      { selectedEdge_.reset(); }
+void GraphWidget::clearSelection() { selectedEdge_.reset(); }
 void GraphWidget::refreshViewportItems() { redraw(); }
 
 void GraphWidget::selectEdge(const VisualEdge& edge)
@@ -207,7 +211,8 @@ double GraphWidget::currentViewScale() const
 
 void GraphWidget::handleSpecialModes()
 {
-    if (largeGraphMode_) {
+    if (largeGraphMode_)
+    {
         auto* text = scene_->addText(
             "Large graph loaded.\n"
             "Graph visualization is disabled for performance.\n"
@@ -221,7 +226,8 @@ void GraphWidget::handleSpecialModes()
 
     scene_->setSceneRect(0, 0, 720, 440);
 
-    if (autoFitPending_) {
+    if (autoFitPending_)
+    {
         view_->resetTransform();
         view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
         autoFitPending_ = false;
@@ -232,11 +238,12 @@ std::map<int, QPointF> GraphWidget::computeCircularLayout(const std::set<int>& n
 {
     std::map<int, QPointF> pos;
     const QPointF center(390.0, 260.0);
-    const double  radius = std::max(210.0, nodes.size() * 6.0);
-    const int     n      = std::max(1, static_cast<int>(nodes.size()));
+    const double radius = std::max(210.0, nodes.size() * 6.0);
+    const int n = std::max(1, static_cast<int>(nodes.size()));
     int index = 0;
 
-    for (int node : nodes) {
+    for (int node : nodes)
+    {
         const double angle = -kPi / 2.0 + 2.0 * kPi * index / n;
         pos[node] = QPointF(
             center.x() + radius * std::cos(angle),
@@ -251,8 +258,8 @@ std::map<int, QPointF> GraphWidget::computeCircularLayout(const std::set<int>& n
 
 void GraphWidget::drawEdges(const std::map<int, QPointF>& pos, double invScale)
 {
-    const double arrowSize      = kBaseArrowSize * invScale;
-    const double nodeRadius     = kBaseNodeRadius * invScale;
+    const double arrowSize = kBaseArrowSize * invScale;
+    const double nodeRadius = kBaseNodeRadius * invScale;
     const double clickableWidth = 18.0 * invScale;
 
     std::set<std::pair<int,int>> allEdgePairs;
@@ -263,8 +270,9 @@ void GraphWidget::drawEdges(const std::map<int, QPointF>& pos, double invScale)
         return allEdgePairs.count({to, from}) > 0;
     };
 
-    for (const auto& edge : edges_) {
-        const bool used        = state_.hasResult && edgeIsInPath(edge, state_.path);
+    for (const auto& edge : edges_)
+    {
+        const bool used = state_.hasResult && edgeIsInPath(edge, state_.path);
         const bool unavailable = state_.hasResult && !used && edge.maxCapacity + 1e-9 < state_.resultZ;
         if (unavailable) continue;
 
@@ -277,14 +285,16 @@ void GraphWidget::drawEdges(const std::map<int, QPointF>& pos, double invScale)
         if (len <= 1e-9) continue;
         dir /= len;
 
-        QColor color       = edge.isNew ? QColor(145, 135, 160) : QColor(122, 137, 158);
+        QColor color = edge.isNew ? QColor(145, 135, 160) : QColor(122, 137, 158);
         double visualWidth = 2.2;
 
-        if (used) {
-            color       = edge.isNew ? QColor(38, 225, 128) : QColor(25, 150, 255);
+        if (used)
+        {
+            color = edge.isNew ? QColor(38, 225, 128) : QColor(25, 150, 255);
             visualWidth = 4.0;
         }
-        if (selected) {
+        if (selected)
+        {
             color = used
                 ? (edge.isNew ? QColor(96, 255, 168) : QColor(90, 190, 255))
                 : QColor(205, 215, 230);
@@ -298,11 +308,12 @@ void GraphWidget::drawEdges(const std::map<int, QPointF>& pos, double invScale)
         QPainterPath path;
         QPointF arrowTip, arrowFrom;
 
-        if (isBidirectional(edge.from, edge.to) && edge.from > edge.to) {
-            const QPointF mid    = (a + b) / 2.0;
+        if (isBidirectional(edge.from, edge.to) && edge.from > edge.to)
+        {
+            const QPointF mid = (a + b) / 2.0;
             const QPointF perp(-dir.y(), dir.x());
-            const double  offset = std::max(28.0 * invScale, len * 0.22);
-            const QPointF ctrl   = mid + perp * offset;
+            const double offset = std::max(28.0 * invScale, len * 0.22);
+            const QPointF ctrl = mid + perp * offset;
 
             QPointF sDir = ctrl - a;
             const double sLen = std::hypot(sDir.x(), sDir.y());
@@ -316,14 +327,16 @@ void GraphWidget::drawEdges(const std::map<int, QPointF>& pos, double invScale)
 
             path.moveTo(curveStart);
             path.quadTo(ctrl, curveEnd);
-            arrowTip  = curveEnd;
+            arrowTip = curveEnd;
             arrowFrom = ctrl;
-        } else {
+        }
+        else
+        {
             const QPointF start = a + dir * nodeRadius;
-            const QPointF end   = b - dir * nodeRadius;
+            const QPointF end = b - dir * nodeRadius;
             path.moveTo(start);
             path.lineTo(end);
-            arrowTip  = end;
+            arrowTip = end;
             arrowFrom = start;
         }
 
@@ -347,7 +360,8 @@ void GraphWidget::drawNodes(const std::map<int, QPointF>& pos, const std::set<in
 {
     const bool showLabels = nodes.size() <= 200;
 
-    for (int node : nodes) {
+    for (int node : nodes)
+    {
         const QPointF p = pos.at(node);
 
         auto* circle = scene_->addEllipse(
@@ -360,7 +374,8 @@ void GraphWidget::drawNodes(const std::map<int, QPointF>& pos, const std::set<in
         circle->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
         circle->setZValue(10);
 
-        if (showLabels) {
+        if (showLabels)
+        {
             auto* text = new QGraphicsSimpleTextItem(QString::number(node), circle);
             text->setBrush(QBrush(Qt::white));
             text->setFont(QFont("Segoe UI", 11, QFont::Bold));
@@ -376,13 +391,15 @@ void GraphWidget::redraw()
 {
     scene_->clear();
 
-    if (edges_.empty() || largeGraphMode_) {
+    if (edges_.empty() || largeGraphMode_)
+    {
         handleSpecialModes();
         return;
     }
 
     std::set<int> nodes;
-    for (const auto& e : edges_) {
+    for (const auto& e : edges_)
+    {
         nodes.insert(e.from);
         nodes.insert(e.to);
     }
@@ -390,7 +407,8 @@ void GraphWidget::redraw()
     const auto pos = computeCircularLayout(nodes);
 
     QRectF layoutRect;
-    for (const auto& [node, p] : pos) {
+    for (const auto& [node, p] : pos)
+    {
         if (layoutRect.isNull())
             layoutRect = QRectF(p, QSizeF(1, 1));
         else
@@ -398,7 +416,8 @@ void GraphWidget::redraw()
     }
     scene_->setSceneRect(layoutRect.adjusted(-120, -120, 120, 120));
 
-    if (autoFitPending_) {
+    if (autoFitPending_)
+    {
         view_->resetTransform();
         view_->fitInView(scene_->sceneRect(), Qt::KeepAspectRatio);
         autoFitPending_ = false;

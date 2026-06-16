@@ -45,7 +45,8 @@ inline QString formatPath(const std::vector<int>& path)
         return "(fara drum)";
 
     QString result;
-    for (size_t i = 0; i < path.size(); ++i) {
+    for (size_t i = 0; i < path.size(); ++i)
+    {
         result += QString::number(path[i]);
         if (i + 1 < path.size())
             result += " -> ";

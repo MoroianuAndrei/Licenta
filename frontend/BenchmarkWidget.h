@@ -33,9 +33,9 @@ signals:
 
 private:
     std::vector<int> sizes_;
-    double           W_;
-    int              maxCapLimit_;
-    unsigned int     seed_;
+    double W_;
+    int maxCapLimit_;
+    unsigned int seed_;
 };
 
 
@@ -63,16 +63,16 @@ private:
     void addTableRow(const BenchmarkEntry& e, int row);
     void setRunning(bool running);
 
-    QLineEdit*      nodesInput_;
+    QLineEdit* nodesInput_;
     QDoubleSpinBox* budgetInput_;
-    QSpinBox*       maxCapLimitInput_;
-    QPushButton*    runButton_;
-    QPushButton*    saveButton_;
-    QProgressBar*   progressBar_;
-    QLabel*         statusLabel_;
-    QTableWidget*   resultsTable_;
-    QTextEdit*      logBox_;
+    QSpinBox* maxCapLimitInput_;
+    QPushButton* runButton_;
+    QPushButton* saveButton_;
+    QProgressBar* progressBar_;
+    QLabel* statusLabel_;
+    QTableWidget* resultsTable_;
+    QTextEdit* logBox_;
     std::vector<BenchmarkEntry> results_;
-    QThread*        workerThread_ = nullptr;
+    QThread* workerThread_ = nullptr;
 };
 

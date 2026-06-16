@@ -26,30 +26,30 @@ GenerateGraphWidget::GenerateGraphWidget(QWidget* parent)
     auto* subtitle = new QLabel("Generate random directed graphs for simulations and benchmark tests.");
     subtitle->setStyleSheet("color: #94a3b8; font-size: 14px;");
 
-    nodesSpinBox            = new QSpinBox(this);
-    pathsSpinBox            = new QSpinBox(this);
-    cyclesSpinBox           = new QSpinBox(this);
-    probabilitySpinBox      = new QDoubleSpinBox(this);
-    minCapacitySpinBox      = new QSpinBox(this);
-    maxCapacitySpinBox      = new QSpinBox(this);
+    nodesSpinBox = new QSpinBox(this);
+    pathsSpinBox = new QSpinBox(this);
+    cyclesSpinBox = new QSpinBox(this);
+    probabilitySpinBox = new QDoubleSpinBox(this);
+    minCapacitySpinBox = new QSpinBox(this);
+    maxCapacitySpinBox = new QSpinBox(this);
     maxCapacityLimitSpinBox = new QSpinBox(this);
-    seedSpinBox             = new QSpinBox(this);
+    seedSpinBox = new QSpinBox(this);
 
-    nodesSpinBox->setRange(2, 10000);           nodesSpinBox->setValue(100);
-    pathsSpinBox->setRange(1, 10000);           pathsSpinBox->setValue(20);
-    cyclesSpinBox->setRange(0, 10000);          cyclesSpinBox->setValue(10);
-    probabilitySpinBox->setRange(0.0, 1.0);     probabilitySpinBox->setValue(0.05);
-    probabilitySpinBox->setDecimals(3);         probabilitySpinBox->setSingleStep(0.01);
-    minCapacitySpinBox->setRange(1, 1000000000);  minCapacitySpinBox->setValue(1);
-    maxCapacitySpinBox->setRange(2, 1000000000);  maxCapacitySpinBox->setValue(100);
+    nodesSpinBox->setRange(2, 10000); nodesSpinBox->setValue(100);
+    pathsSpinBox->setRange(1, 10000); pathsSpinBox->setValue(20);
+    cyclesSpinBox->setRange(0, 10000); cyclesSpinBox->setValue(10);
+    probabilitySpinBox->setRange(0.0, 1.0); probabilitySpinBox->setValue(0.05);
+    probabilitySpinBox->setDecimals(3); probabilitySpinBox->setSingleStep(0.01);
+    minCapacitySpinBox->setRange(1, 1000000000); minCapacitySpinBox->setValue(1);
+    maxCapacitySpinBox->setRange(2, 1000000000); maxCapacitySpinBox->setValue(100);
     maxCapacityLimitSpinBox->setRange(2, 2000000000); maxCapacityLimitSpinBox->setValue(500000);
     maxCapacityLimitSpinBox->setGroupSeparatorShown(true);
-    seedSpinBox->setRange(0, 999999999);        seedSpinBox->setValue(123);
+    seedSpinBox->setRange(0, 999999999); seedSpinBox->setValue(123);
 
     generateButton = new QPushButton("Generate CSV", this);
     generateButton->setStyleSheet(
         "QPushButton { background-color:#2563eb; color:white; border:none; border-radius:10px;"
-        "              padding:12px; font-size:15px; font-weight:700; }"
+        " padding:12px; font-size:15px; font-weight:700; }"
         "QPushButton:hover { background-color:#1d4ed8; }"
     );
 
@@ -57,7 +57,7 @@ GenerateGraphWidget::GenerateGraphWidget(QWidget* parent)
     statusLabel->setStyleSheet("color: #22c55e; font-size: 13px;");
 
     auto addRow = [&](const QString& labelText, QWidget* input) {
-        auto* row   = new QHBoxLayout();
+        auto* row = new QHBoxLayout();
         auto* label = new QLabel(labelText, this);
         label->setFixedWidth(180);
         label->setStyleSheet("color: white; font-size: 14px;");
@@ -69,14 +69,14 @@ GenerateGraphWidget::GenerateGraphWidget(QWidget* parent)
     layout->addWidget(title);
     layout->addWidget(subtitle);
     layout->addSpacing(20);
-    addRow("Number of nodes:",    nodesSpinBox);
+    addRow("Number of nodes:", nodesSpinBox);
     addRow("Number of s-t paths:", pathsSpinBox);
-    addRow("Number of cycles:",   cyclesSpinBox);
+    addRow("Number of cycles:", cyclesSpinBox);
     addRow("Extra arc probability:", probabilitySpinBox);
-    addRow("Min Capacity:",       minCapacitySpinBox);
-    addRow("Max Capacity:",       maxCapacitySpinBox);
+    addRow("Min Capacity:", minCapacitySpinBox);
+    addRow("Max Capacity:", maxCapacitySpinBox);
     addRow("Max Capacity Limit:", maxCapacityLimitSpinBox);
-    addRow("Seed:",               seedSpinBox);
+    addRow("Seed:", seedSpinBox);
     layout->addSpacing(20);
     layout->addWidget(generateButton);
     layout->addWidget(statusLabel);
@@ -85,9 +85,9 @@ GenerateGraphWidget::GenerateGraphWidget(QWidget* parent)
     setStyleSheet(
         "background-color: #0f172a;"
         "QSpinBox, QDoubleSpinBox {"
-        "  background-color: #111827; color: white;"
-        "  border: 1px solid #334155; border-radius: 8px;"
-        "  padding: 8px; font-size: 14px;"
+        " background-color: #111827; color: white;"
+        " border: 1px solid #334155; border-radius: 8px;"
+        " padding: 8px; font-size: 14px;"
         "}"
     );
 
@@ -98,7 +98,8 @@ QString GenerateGraphWidget::defaultDataPath() const
 {
     QDir dir(QCoreApplication::applicationDirPath());
 
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 5; ++i)
+    {
         if (dir.exists("data")) { dir.cd("data"); return dir.absolutePath(); }
         if (!dir.cdUp()) break;
     }
@@ -109,7 +110,7 @@ QString GenerateGraphWidget::defaultDataPath() const
 void GenerateGraphWidget::onGenerateClicked()
 {
     const QString suggestedFileName = QString("random_graph_%1.csv").arg(nodesSpinBox->value());
-    const QString suggestedPath     = QDir(defaultDataPath()).filePath(suggestedFileName);
+    const QString suggestedPath = QDir(defaultDataPath()).filePath(suggestedFileName);
 
     QString filePath = QFileDialog::getSaveFileName(
         this, "Save generated graph", suggestedPath,
@@ -121,19 +122,20 @@ void GenerateGraphWidget::onGenerateClicked()
     if (!filePath.endsWith(".csv", Qt::CaseInsensitive))
         filePath += ".csv";
 
-    try {
+    try
+    {
         RandomGraphParams params;
-        params.nodes              = nodesSpinBox->value();
-        params.paths              = pathsSpinBox->value();
-        params.cycles             = cyclesSpinBox->value();
+        params.nodes = nodesSpinBox->value();
+        params.paths = pathsSpinBox->value();
+        params.cycles = cyclesSpinBox->value();
         params.extraArcProbability = probabilitySpinBox->value();
-        params.seed               = static_cast<unsigned int>(seedSpinBox->value());
-        params.minCapacity        = minCapacitySpinBox->value();
-        params.maxCapacity        = maxCapacitySpinBox->value();
-        params.maxCapacityLimit   = maxCapacityLimitSpinBox->value();
-        params.minRate            = 1;
-        params.maxRate            = 20;
-        params.newArcProbability  = 0.10;
+        params.seed = static_cast<unsigned int>(seedSpinBox->value());
+        params.minCapacity = minCapacitySpinBox->value();
+        params.maxCapacity = maxCapacitySpinBox->value();
+        params.maxCapacityLimit = maxCapacityLimitSpinBox->value();
+        params.minRate = 1;
+        params.maxRate = 20;
+        params.newArcProbability = 0.10;
 
         RandomGraphGenerator generator(params);
         generator.generateToCSV(filePath.toStdString());
@@ -141,7 +143,8 @@ void GenerateGraphWidget::onGenerateClicked()
         statusLabel->setText("Generated: " + filePath);
         emit graphGenerated(filePath);
     }
-    catch (const std::exception& e) {
+    catch (const std::exception& e)
+    {
         QMessageBox::critical(this, "Generation error", e.what());
     }
 }

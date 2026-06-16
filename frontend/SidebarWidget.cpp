@@ -6,33 +6,33 @@
 
 static const QString kNormalStyle =
     "QPushButton {"
-    "  background-color: #1a1f2e;"
-    "  color: #c8d8f0;"
-    "  border: none;"
-    "  border-radius: 12px;"
-    "  padding: 14px;"
-    "  font-size: 15px;"
-    "  text-align: left;"
+    " background-color: #1a1f2e;"
+    " color: #c8d8f0;"
+    " border: none;"
+    " border-radius: 12px;"
+    " padding: 14px;"
+    " font-size: 15px;"
+    " text-align: left;"
     "}"
     "QPushButton:hover {"
-    "  background-color: #263044;"
-    "  color: white;"
+    " background-color: #263044;"
+    " color: white;"
     "}";
 
 static const QString kActiveStyle =
     "QPushButton {"
-    "  background-color: #1a3a5c;"
-    "  color: #7dd3fc;"
-    "  border: 1px solid #27446f;"
-    "  border-radius: 12px;"
-    "  padding: 14px;"
-    "  font-size: 15px;"
-    "  font-weight: 700;"
-    "  text-align: left;"
+    " background-color: #1a3a5c;"
+    " color: #7dd3fc;"
+    " border: 1px solid #27446f;"
+    " border-radius: 12px;"
+    " padding: 14px;"
+    " font-size: 15px;"
+    " font-weight: 700;"
+    " text-align: left;"
     "}"
     "QPushButton:hover {"
-    "  background-color: #1e4a78;"
-    "  color: #bae6fd;"
+    " background-color: #1e4a78;"
+    " color: #bae6fd;"
     "}";
 
 SidebarWidget::SidebarWidget(QWidget* parent)
@@ -51,10 +51,10 @@ SidebarWidget::SidebarWidget(QWidget* parent)
         "color: white;"
     );
 
-    generateButton  = new QPushButton("Generate Graph CSV");
-    loadRunButton   = new QPushButton("Load & Run CSV");
+    generateButton = new QPushButton("Generate Graph CSV");
+    loadRunButton = new QPushButton("Load & Run CSV");
     benchmarkButton = new QPushButton("Benchmark");
-    testsButton     = new QPushButton("Tests & Validation");
+    testsButton = new QPushButton("Tests & Validation");
 
     layout->addWidget(title);
     layout->addSpacing(24);
@@ -98,8 +98,8 @@ void SidebarWidget::setActiveButton(int index)
 void SidebarWidget::applyButtonStyles()
 {
     generateButton ->setStyleSheet(activeIndex_ == 0 ? kActiveStyle : kNormalStyle);
-    loadRunButton  ->setStyleSheet(activeIndex_ == 1 ? kActiveStyle : kNormalStyle);
+    loadRunButton ->setStyleSheet(activeIndex_ == 1 ? kActiveStyle : kNormalStyle);
     benchmarkButton->setStyleSheet(activeIndex_ == 2 ? kActiveStyle : kNormalStyle);
-    testsButton    ->setStyleSheet(activeIndex_ == 3 ? kActiveStyle : kNormalStyle);
+    testsButton ->setStyleSheet(activeIndex_ == 3 ? kActiveStyle : kNormalStyle);
 }
 

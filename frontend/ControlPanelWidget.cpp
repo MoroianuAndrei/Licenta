@@ -57,13 +57,18 @@ double ControlPanelWidget::parameterValue() const
 
 void ControlPanelWidget::setParameterPrefixForAlgorithm(const QString& algorithm)
 {
-    if (algorithm == "MCP") {
+    if (algorithm == "MCP")
+    {
         parameterSpin_->setVisible(false);
-    } else if (algorithm == "AMCMCPEP") {
+    }
+    else if (algorithm == "AMCMCPEP")
+    {
         parameterSpin_->setVisible(true);
         parameterSpin_->setPrefix("z = ");
         parameterSpin_->setToolTip("Capacitatea tinta z pentru MCMCPEP");
-    } else {
+    }
+    else
+    {
         parameterSpin_->setVisible(true);
         parameterSpin_->setPrefix("W = ");
         parameterSpin_->setToolTip("Bugetul W pentru algoritmii sub constrangere de buget");

@@ -37,7 +37,7 @@ private:
     double currentViewScale() const;
 
     QGraphicsScene* scene_ = nullptr;
-    QGraphicsView*  view_  = nullptr;
+    QGraphicsView* view_ = nullptr;
 
     std::vector<VisualEdge> edges_;
     AlgorithmViewState state_;

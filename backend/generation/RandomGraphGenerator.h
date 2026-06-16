@@ -4,7 +4,8 @@
 #include <vector>
 #include <random>
 
-struct RandomGraphParams {
+struct RandomGraphParams
+{
     int nodes = 50;
     int paths = 10;
     int cycles = 5;
@@ -22,7 +23,8 @@ struct RandomGraphParams {
     unsigned int seed = 0;
 };
 
-class RandomGraphGenerator {
+class RandomGraphGenerator
+{
 public:
     explicit RandomGraphGenerator(RandomGraphParams params);
 

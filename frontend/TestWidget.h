@@ -21,8 +21,8 @@ private:
     void applyStyle();
     void displayOutput(const QString& text);
 
-    QPushButton* runButton_     = nullptr;
-    QTextEdit*   logBox_        = nullptr;
-    QLabel*      summaryLabel_  = nullptr;
+    QPushButton* runButton_ = nullptr;
+    QTextEdit* logBox_ = nullptr;
+    QLabel* summaryLabel_ = nullptr;
 };
 

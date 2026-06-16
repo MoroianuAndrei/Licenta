@@ -8,11 +8,13 @@
 RandomGraphGenerator::RandomGraphGenerator(RandomGraphParams params)
     : params(params)
 {
-    if (params.nodes < 2) {
+    if (params.nodes < 2)
+    {
         throw std::runtime_error("Random graph must have at least 2 nodes.");
     }
 
-    if (params.seed == 0) {
+    if (params.seed == 0)
+    {
         params.seed = static_cast<unsigned int>(
             std::chrono::high_resolution_clock::now().time_since_epoch().count()
             );
@@ -38,7 +40,8 @@ double RandomGraphGenerator::randomDouble()
 std::vector<int> RandomGraphGenerator::shuffledNodes(int start, int end)
 {
     std::vector<int> nodes;
-    for (int i = start; i <= end; ++i) {
+    for (int i = start; i <= end; ++i)
+    {
         nodes.push_back(i);
     }
 
@@ -48,7 +51,8 @@ std::vector<int> RandomGraphGenerator::shuffledNodes(int start, int end)
 
 void RandomGraphGenerator::addArc(int from, int to)
 {
-    if (from != to) {
+    if (from != to)
+    {
         adjacency[from][to] = 1;
     }
 }
@@ -71,13 +75,15 @@ void RandomGraphGenerator::generateRandomSTPath()
     std::vector<int> path;
     path.push_back(s);
 
-    for (int i = 0; i < middleCount; ++i) {
+    for (int i = 0; i < middleCount; ++i)
+    {
         path.push_back(middleNodes[i]);
     }
 
     path.push_back(t);
 
-    for (size_t i = 0; i + 1 < path.size(); ++i) {
+    for (size_t i = 0; i + 1 < path.size(); ++i)
+    {
         addArc(path[i], path[i + 1]);
     }
 }
@@ -88,7 +94,8 @@ void RandomGraphGenerator::generateRandomCycle()
 
     int cycleLength = randomInt(2, params.nodes);
 
-    for (int i = 0; i < cycleLength - 1; ++i) {
+    for (int i = 0; i < cycleLength - 1; ++i)
+    {
         addArc(nodes[i], nodes[i + 1]);
     }
 
@@ -97,13 +104,17 @@ void RandomGraphGenerator::generateRandomCycle()
 
 void RandomGraphGenerator::addRandomExtraArcs()
 {
-    for (int i = 1; i <= params.nodes; ++i) {
-        for (int j = 1; j <= params.nodes; ++j) {
-            if (i == j) {
+    for (int i = 1; i <= params.nodes; ++i)
+    {
+        for (int j = 1; j <= params.nodes; ++j)
+        {
+            if (i == j)
+            {
                 continue;
             }
 
-            if (!hasArc(i, j) && randomDouble() < params.extraArcProbability) {
+            if (!hasArc(i, j) && randomDouble() < params.extraArcProbability)
+            {
                 addArc(i, j);
             }
         }
@@ -112,11 +123,13 @@ void RandomGraphGenerator::addRandomExtraArcs()
 
 void RandomGraphGenerator::generateToCSV(const std::string& filePath)
 {
-    for (int i = 0; i < params.paths; ++i) {
+    for (int i = 0; i < params.paths; ++i)
+    {
         generateRandomSTPath();
     }
 
-    for (int i = 0; i < params.cycles; ++i) {
+    for (int i = 0; i < params.cycles; ++i)
+    {
         generateRandomCycle();
     }
 
@@ -128,15 +141,19 @@ void RandomGraphGenerator::writeCSV(const std::string& filePath)
 {
     std::ofstream out(filePath);
 
-    if (!out.is_open()) {
+    if (!out.is_open())
+    {
         throw std::runtime_error("Cannot open file for writing: " + filePath);
     }
 
     out << "from,to,capacity,max_capacity,isNew,rate\n";
 
-    for (int i = 1; i <= params.nodes; ++i) {
-        for (int j = 1; j <= params.nodes; ++j) {
-            if (!hasArc(i, j)) {
+    for (int i = 1; i <= params.nodes; ++i)
+    {
+        for (int j = 1; j <= params.nodes; ++j)
+        {
+            if (!hasArc(i, j))
+            {
                 continue;
             }
 
