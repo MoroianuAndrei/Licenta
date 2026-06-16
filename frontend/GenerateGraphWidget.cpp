@@ -54,16 +54,16 @@ GenerateGraphWidget::GenerateGraphWidget(QWidget* parent)
         sb->setStyleSheet(spinStyle);
     probabilitySpinBox_->setStyleSheet(spinStyle);
 
-    nodesSpinBox_->setRange(2, 10000);              nodesSpinBox_->setValue(100);
+    nodesSpinBox_->setRange(2, 10000);              nodesSpinBox_->setValue(20);
     sourceSpinBox_->setRange(1, 10000);             sourceSpinBox_->setValue(1);
-    targetSpinBox_->setRange(1, 10000);             targetSpinBox_->setValue(100);
-    pathsSpinBox_->setRange(1, 10000);              pathsSpinBox_->setValue(20);
-    cyclesSpinBox_->setRange(0, 10000);             cyclesSpinBox_->setValue(10);
+    targetSpinBox_->setRange(1, 10000);             targetSpinBox_->setValue(20);
+    pathsSpinBox_->setRange(1, 10000);              pathsSpinBox_->setValue(4);
+    cyclesSpinBox_->setRange(0, 10000);             cyclesSpinBox_->setValue(2);
     probabilitySpinBox_->setRange(0.0, 1.0);        probabilitySpinBox_->setValue(0.05);
     probabilitySpinBox_->setDecimals(3);            probabilitySpinBox_->setSingleStep(0.01);
     minCapacitySpinBox_->setRange(1, 1000000000);   minCapacitySpinBox_->setValue(1);
     maxCapacitySpinBox_->setRange(2, 1000000000);   maxCapacitySpinBox_->setValue(100);
-    maxCapacityLimitSpinBox_->setRange(2, 2000000000); maxCapacityLimitSpinBox_->setValue(500000);
+    maxCapacityLimitSpinBox_->setRange(2, 2000000000); maxCapacityLimitSpinBox_->setValue(1000);
     seedSpinBox_->setRange(0, 999999999);           seedSpinBox_->setValue(123);
 
     generateButton_ = new QPushButton("Generate CSV", this);

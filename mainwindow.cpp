@@ -315,7 +315,7 @@ void MainWindow::loadGraphFromFile(const QString& fileName)
     resetResultState();
     refreshViewState();
 
-    constexpr int kLargeGraphThreshold = 80;
+    constexpr int kLargeGraphThreshold = 200;
     const bool isLarge = (int)visualEdges_.size() > kLargeGraphThreshold;
     graphWidget_->setLargeGraphMode(isLarge);
     graphWidget_->setEdges(visualEdges_);
