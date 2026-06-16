@@ -98,7 +98,7 @@ void TestWidget::onRunClicked()
     int wrong = output.count("DIFERIT") + output.count("NECONCORDANTA") + output.count("GRESIT");
 
     summaryLabel_->setText(
-        QString("Rezultat: %1 corecte |  %2 erori").arg(correct).arg(wrong)
+        QString("Rezultat: %1 corecte | %2 erori").arg(correct).arg(wrong)
     );
 
     runButton_->setEnabled(true);

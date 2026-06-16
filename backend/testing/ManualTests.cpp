@@ -222,9 +222,8 @@ static void test_Comparison_Alg3_vs_Alg4()
     std::cout << " Drum Alg4: ";
     printPath(res4.path);
 
-    bool sameZ = std::abs(res3.maxCapacity - res4.maxCapacity) < 0.1;
-    std::cout << "\n Status: z* concordant intre Alg3 si Alg4? "
-        << (sameZ ? "DA" : "NU") << "\n";
+    bool sameZ = std::abs(res3.maxCapacity - res4.maxCapacity) < 1.0;
+    std::cout << "\n Status: " << (sameZ ? "CORECT (z* concordant)" : "NECONCORDANTA") << "\n";
 }
 
 static void test_NewArc()

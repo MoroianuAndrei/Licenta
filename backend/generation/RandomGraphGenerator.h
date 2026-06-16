@@ -8,7 +8,7 @@ struct RandomGraphParams
 {
     int nodes = 50;
     int source = 1;
-    int target = 0;  // 0 = use nodes (last node)
+    int target = 0;
     int paths = 10;
     int cycles = 5;
     double extraArcProbability = 0.05;
